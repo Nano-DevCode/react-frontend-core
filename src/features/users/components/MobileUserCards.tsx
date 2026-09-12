@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { UserStatusSwitch } from './UserStatusSwitch';
 import { UserRoleDialog } from './UserRoleDialog';
-import type { UserRecord } from '@/types';
+import type { UserRecord } from '@/types/users.types';
 
 interface MobileUserCardsProps {
   users: UserRecord[];

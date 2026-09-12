@@ -13,7 +13,7 @@ import { useUsersTableColumns } from './use-users-table-columns';
 import { UsersTableToolbar } from './UsersTableToolbar';
 import { UserRoleDialog } from './UserRoleDialog';
 import { useExportUsersMutation } from '../hooks/use-users';
-import type { UserRecord } from '@/types';
+import type { UserRecord } from '@/types/users.types';
 
 interface UsersTableProps {
   users: UserRecord[];

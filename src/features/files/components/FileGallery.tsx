@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { useDeleteFileMutation } from '../hooks/use-files';
 import { getFileViewUrl } from '@/utils/file-url';
-import type { UploadResult } from '@/types';
+import type { UploadResult } from '@/types/files.types';
 import { toast } from 'sonner';
 
 interface FileGalleryProps {
@@ -143,7 +143,13 @@ export const FileGallery = ({ files, onFileDeleted }: FileGalleryProps) => {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => window.open(getFileViewUrl(file.key), '_blank')}
+                      onClick={() =>
+                        window.open(
+                          getFileViewUrl(file.key),
+                          '_blank',
+                          'noopener,noreferrer'
+                        )
+                      }
                       title="Abrir en nueva pestaña"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />

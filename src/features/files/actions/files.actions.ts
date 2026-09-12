@@ -5,7 +5,7 @@ import type {
   UploadFileParams,
   FileUrlResponse,
   DeleteFileResponse,
-} from '@/types';
+} from '@/types/files.types';
 import type { AxiosProgressEvent } from 'axios';
 
 export const uploadFileAction = async ({
@@ -41,7 +41,8 @@ export const uploadFileAction = async ({
 export const uploadMultipleFilesAction = async (
   files: File[],
   customName?: string,
-  bucket?: string
+  bucket?: string,
+  onProgress?: (percent: number) => void
 ): Promise<UploadResult[]> => {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
@@ -54,6 +55,12 @@ export const uploadMultipleFilesAction = async (
     {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (e: AxiosProgressEvent) => {
+        if (e.total && onProgress) {
+          const percent = Math.round((e.loaded * 100) / e.total);
+          onProgress(percent);
+        }
       },
     }
   );

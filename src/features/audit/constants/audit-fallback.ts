@@ -1,4 +1,4 @@
-import type { AuditLogRecord } from '@/types';
+import type { AuditLogRecord } from '@/types/audit.types';
 
 export const FALLBACK_AUDIT_LOGS: AuditLogRecord[] = [
   {

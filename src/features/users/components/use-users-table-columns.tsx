@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { UserStatusSwitch } from './UserStatusSwitch';
-import type { UserRecord } from '@/types';
+import type { UserRecord } from '@/types/users.types';
 
 interface UseUsersTableColumnsProps {
   onEditUser: (user: UserRecord) => void;

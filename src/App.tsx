@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { router } from './router';
+import { router } from './router/app-router';
 import { AppPreloader } from './components/shared/AppPreloader';
 import { useAuthStore } from './stores/use-auth-store';
 import { useUIStore } from './stores/use-ui-store';

@@ -10,8 +10,8 @@ import type {
   TwoFactorAuthDto,
   TwoFactorAuthenticateResponse,
   TwoFactorStatusResponse,
-  CriticalActionResponse,
-} from '@/types';
+} from '@/types/two-factor.types';
+import type { CriticalActionResponse } from '@/types/auth.types';
 
 export const getTwoFactorStatusAction = async (): Promise<TwoFactorStatusResponse> => {
   try {

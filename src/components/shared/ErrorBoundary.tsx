@@ -1,5 +1,13 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { ShieldAlert, RefreshCw, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ShieldAlert,
+  RefreshCw,
+  Home,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryProps {
@@ -13,9 +21,14 @@ interface ErrorBoundaryState {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   showDetails: boolean;
+  incidentId: string;
+  copied: boolean;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -23,17 +36,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       error: null,
       errorInfo: null,
       showDetails: false,
+      incidentId: '',
+      copied: false,
     };
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    return { hasError: true, error };
+    // Generación de un código opaco único de incidente (evita fugar nombres de archivos o rutas)
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return {
+      hasError: true,
+      error,
+      incidentId: `ERR-${randomHex}`,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
-    // Registrar error para monitoreo / observabilidad
-    if (typeof console !== 'undefined' && console.error) {
+    // En desarrollo o pruebas internas se registra en consola
+    if (import.meta.env.DEV && typeof console !== 'undefined' && console.error) {
       console.error('[ErrorBoundary caught error]:', error, errorInfo);
     }
   }
@@ -44,6 +65,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       error: null,
       errorInfo: null,
       showDetails: false,
+      incidentId: '',
+      copied: false,
     });
     if (this.props.onReset) {
       this.props.onReset();
@@ -58,11 +81,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState((prev) => ({ showDetails: !prev.showDetails }));
   };
 
+  handleCopyIncidentId = (): void => {
+    if (this.state.incidentId && navigator.clipboard) {
+      navigator.clipboard.writeText(this.state.incidentId);
+      this.setState({ copied: true });
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    }
+  };
+
   render(): ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
+
+      const isProd = import.meta.env.PROD;
 
       return (
         <div className="notranslate min-h-[400px] flex items-center justify-center p-6 w-full">
@@ -76,9 +109,34 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <span>Ha ocurrido un error inesperado</span>
               </h2>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
-                <span>La interfaz encontró una excepción de ejecución. El estado se ha aislado para prevenir fallos en cadena en el resto de la aplicación.</span>
+                <span>
+                  La interfaz encontró una excepción de ejecución. El estado se
+                  ha aislado de forma segura para prevenir fallos en cadena.
+                </span>
               </p>
             </div>
+
+            {/* Código opaco de incidente para soporte técnico (Sin filtrar memoria ni stack traces en PROD) */}
+            {this.state.incidentId && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/60 border border-border/60 text-xs font-mono">
+                <span className="text-muted-foreground">Código de Incidente:</span>
+                <span className="font-bold text-foreground">
+                  {this.state.incidentId}
+                </span>
+                <button
+                  type="button"
+                  onClick={this.handleCopyIncidentId}
+                  className="text-muted-foreground hover:text-foreground transition-colors ml-1 p-0.5"
+                  title="Copiar código de incidente"
+                >
+                  {this.state.copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Button
@@ -102,7 +160,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </Button>
             </div>
 
-            {this.state.error && (
+            {/* En desarrollo (DEV) se permite inspección técnica; en producción (PROD) se oculta para mitigar fuga de información */}
+            {!isProd && this.state.error && (
               <div className="pt-4 border-t border-border/60 text-left">
                 <button
                   type="button"
@@ -110,7 +169,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   className="flex items-center justify-between w-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
                 >
                   <span>
-                    <span>Detalles técnicos del error</span>
+                    <span>Detalles técnicos (Solo entorno de desarrollo)</span>
                   </span>
                   {this.state.showDetails ? (
                     <ChevronUp className="h-4 w-4" />

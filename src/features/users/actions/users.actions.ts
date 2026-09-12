@@ -4,8 +4,8 @@ import type {
   UserRecord,
   ToggleUserStatusDto,
   AssignRoleDto,
-  UsersExportResponse,
-} from '@/types';
+} from '@/types/users.types';
+import type { UsersExportResponse } from '@/types/auth.types';
 
 export const fetchUsersAction = async (): Promise<UserRecord[]> => {
   try {

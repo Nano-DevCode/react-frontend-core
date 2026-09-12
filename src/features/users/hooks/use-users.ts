@@ -1,12 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/stores/use-auth-store';
+import { syncUserSession } from '@/api/auth-session';
 import {
   fetchUsersAction,
   toggleUserStatusAction,
   assignRoleAction,
   exportUsersAction,
 } from '../actions/users.actions';
-import type { ToggleUserStatusDto, AssignRoleDto, UserRecord } from '@/types';
+import type { ToggleUserStatusDto, AssignRoleDto, UserRecord } from '@/types/users.types';
 
 export const useUsersQuery = () => {
   return useQuery({
@@ -41,7 +43,13 @@ export const useToggleUserStatusMutation = () => {
       }
       toast.error('Error al actualizar el estado del usuario');
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (currentUserId === variables.userId) {
+        await syncUserSession();
+      }
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
       toast.success('Estado de usuario actualizado con éxito');
     },
   });
@@ -71,8 +79,13 @@ export const useAssignRoleMutation = () => {
 
       return { previousUsers };
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (currentUserId === variables.userId) {
+        await syncUserSession();
+      }
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
       toast.success('Roles y permisos actualizados correctamente');
     },
   });

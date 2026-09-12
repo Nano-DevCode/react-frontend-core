@@ -9,11 +9,12 @@ import {
   executeCriticalAction,
 } from '../actions/two-factor.actions';
 import { useAuthStore } from '@/stores/use-auth-store';
+import { syncUserSession } from '@/api/auth-session';
 import type {
   TwoFactorCodeDto,
   Toggle2FADto,
   TwoFactorAuthDto,
-} from '@/types';
+} from '@/types/two-factor.types';
 
 export const useTwoFactorStatusQuery = (enabled = true) => {
   const updateUser = useAuthStore((state) => state.updateUser);
@@ -35,7 +36,7 @@ export const useTwoFactorStatusQuery = (enabled = true) => {
   });
 };
 
-export const useTwoFactorGenerateQuery = (enabled = true) => {
+export const useTwoFactorGenerateQuery = (enabled = false) => {
   return useQuery({
     queryKey: ['two-factor', 'generate'],
     queryFn: generateTwoFactorSecretAction,
@@ -50,10 +51,11 @@ export const useTwoFactorTurnOnMutation = () => {
 
   return useMutation({
     mutationFn: (dto: TwoFactorCodeDto) => turnOnTwoFactorAction(dto),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       updateUser({ isTwoFactorEnabled: true });
+      await syncUserSession();
       queryClient.invalidateQueries({ queryKey: ['two-factor'] });
-      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
       toast.success(data.message || '2FA activado exitosamente');
     },
   });
@@ -65,9 +67,11 @@ export const useTwoFactorTurnOffMutation = () => {
 
   return useMutation({
     mutationFn: (dto: Toggle2FADto) => turnOffTwoFactorAction(dto),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       updateUser({ isTwoFactorEnabled: false });
+      await syncUserSession();
       queryClient.invalidateQueries({ queryKey: ['two-factor'] });
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
       toast.success(data.message || '2FA desactivado exitosamente');
     },
   });

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { API_ENDPOINTS } from './endpoints';
 import { isTokenExpired } from '@/utils/jwt';
-import type { RefreshTokenResponse } from '@/types';
+import type { RefreshTokenResponse } from '@/types/auth.types';
 
 /**
  * Instancia aislada de Axios exclusivamente para operaciones de autenticación y refresco.
@@ -101,5 +101,18 @@ export const refreshAuthSession = async (): Promise<string> => {
 
   refreshPromise = currentPromise;
   return currentPromise;
+};
+
+/**
+ * Fuerza la sincronización reactiva de la sesión del usuario con el backend.
+ * Se invoca tras modificar roles, activar/desactivar 2FA o cambiar estado,
+ * asegurando que los claims en el frontend coincidan con la purga de caché en Redis del backend.
+ */
+export const syncUserSession = async (): Promise<void> => {
+  try {
+    await refreshAuthSession();
+  } catch (err) {
+    console.warn('Advertencia: No se pudo resincronizar la sesión con el backend:', err);
+  }
 };
 

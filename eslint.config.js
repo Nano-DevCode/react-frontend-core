@@ -32,7 +32,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/components/ui/*.tsx', 'src/router/index.tsx'],
+    files: ['src/components/ui/*.tsx', 'src/router/app-router.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },

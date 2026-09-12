@@ -83,6 +83,36 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Manejo global para Rate Limiting (HTTP 429 - Too Many Requests)
+    if (error.response?.status === 429) {
+      const retryAfterHeader =
+        error.response.headers?.['retry-after'] ||
+        error.response.headers?.['Retry-After'];
+
+      let retryAfterSeconds: number | null = null;
+      if (retryAfterHeader) {
+        const parsed = parseInt(String(retryAfterHeader), 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          retryAfterSeconds = parsed;
+        }
+      }
+
+      const warningMessage = retryAfterSeconds
+        ? `Demasiadas solicitudes. Por favor, espera ${retryAfterSeconds} segundos antes de continuar.`
+        : 'Demasiadas solicitudes. Por favor, espera unos segundos antes de reintentar.';
+
+      if (!originalRequest?.suppressToast) {
+        toast.warning(warningMessage, {
+          id: 'rate-limit-warning',
+          duration: retryAfterSeconds
+            ? Math.min(Math.max(retryAfterSeconds * 1000, 4000), 15000)
+            : 5000,
+        });
+      }
+
+      return Promise.reject(error);
+    }
+
     // Captura uniforme del mensaje de error del backend
     const backendMessage = error.response?.data?.message;
     if (backendMessage && !originalRequest?.suppressToast) {

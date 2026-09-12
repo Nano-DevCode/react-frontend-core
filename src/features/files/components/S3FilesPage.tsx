@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FileDropzone } from './FileDropzone';
 import { FileGallery } from './FileGallery';
 import { getFileViewUrl } from '@/utils/file-url';
-import type { UploadResult } from '@/types';
+import type { UploadResult } from '@/types/files.types';
 
 // Mock files list for initial demonstration
 const INITIAL_FILES: UploadResult[] = [

@@ -14,7 +14,7 @@ import type {
   LogoutResponse,
   AdminDashboardResponse,
   UsersExportResponse,
-} from '@/types';
+} from '@/types/auth.types';
 
 export const loginAction = async (dto: LoginDto): Promise<LoginResponse> => {
   const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, dto);

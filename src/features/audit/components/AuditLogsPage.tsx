@@ -7,7 +7,7 @@ import { AuditLogsToolbar, type AuditActionFilter } from './AuditLogsToolbar';
 import { AuditLogsTable } from './AuditLogsTable';
 import { useAuditLogsQuery } from '../hooks/use-audit';
 import { FALLBACK_AUDIT_LOGS } from '../constants/audit-fallback';
-import type { AuditLogRecord } from '@/types';
+import type { AuditLogRecord } from '@/types/audit.types';
 
 export default function AuditLogsPage() {
   const { data: apiLogs, isLoading, refetch } = useAuditLogsQuery();

@@ -42,7 +42,49 @@ if (typeof window !== 'undefined') {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+
+        // No reintentar en errores definitivos del cliente
+        if (status === 400 || status === 401 || status === 403 || status === 404 || status === 422) {
+          return false;
+        }
+
+        // Ante 429 (Rate Limit), permitir máximo 2 reintentos suaves para no empeorar el throttling
+        if (status === 429) {
+          return failureCount < 2;
+        }
+
+        // Fallos de red o errores 5xx transitorios
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex, error) => {
+        const response = (
+          error as { response?: { status?: number; headers?: Record<string, string> } }
+        )?.response;
+
+        if (response?.status === 429) {
+          const retryAfter =
+            response.headers?.['retry-after'] ||
+            response.headers?.['Retry-After'];
+
+          if (retryAfter) {
+            const parsed = parseInt(String(retryAfter), 10);
+            if (!isNaN(parsed) && parsed > 0) {
+              // Respetar tiempo exacto del backend + jitter suave para desincronizar ráfagas
+              return parsed * 1000 + Math.floor(Math.random() * 500);
+            }
+          }
+
+          // Retroceso exponencial suave para 429 con jitter (2s, 4s...)
+          return Math.min(
+            2000 * Math.pow(2, attemptIndex) + Math.floor(Math.random() * 500),
+            15000
+          );
+        }
+
+        return Math.min(1000 * Math.pow(2, attemptIndex), 10000);
+      },
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 2, // 2 minutos de frescura de caché
     },

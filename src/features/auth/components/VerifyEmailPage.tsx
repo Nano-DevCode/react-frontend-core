@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useVerifyEmailQuery, useResendVerificationMutation } from '../hooks/use-auth';
 import type { AxiosError } from 'axios';
-import type { ApiErrorResponse } from '@/types';
+import type { ApiErrorResponse } from '@/types/api.types';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();

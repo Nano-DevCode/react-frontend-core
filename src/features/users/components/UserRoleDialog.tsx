@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAssignRoleMutation } from '../hooks/use-users';
-import type { UserRecord } from '@/types';
+import type { UserRecord } from '@/types/users.types';
 
 interface UserRoleDialogProps {
   user: UserRecord | null;

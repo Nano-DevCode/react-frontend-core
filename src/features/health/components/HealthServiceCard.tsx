@@ -9,6 +9,11 @@ export interface HealthFooterItem {
   icon?: LucideIcon;
 }
 
+export interface HealthStatusBadge {
+  text: string;
+  variant: 'success' | 'warning' | 'info' | 'error';
+}
+
 export interface HealthServiceCardProps {
   title: string;
   icon: LucideIcon;
@@ -16,6 +21,7 @@ export interface HealthServiceCardProps {
   description: string;
   isUp: boolean;
   statusText?: { up: string; down: string };
+  statusBadge?: HealthStatusBadge;
   latencyMetric: string;
   latencySubtitle: string;
   techBadge: string;
@@ -31,6 +37,7 @@ export const HealthServiceCard = ({
   description,
   isUp,
   statusText = { up: 'OPERACIONAL', down: 'ERROR' },
+  statusBadge,
   latencyMetric,
   latencySubtitle,
   techBadge,
@@ -38,6 +45,27 @@ export const HealthServiceCard = ({
   sparklineColor,
   footerItems,
 }: HealthServiceCardProps) => {
+  const badgeVariant = statusBadge?.variant ?? (isUp ? 'success' : 'error');
+  const badgeText = statusBadge?.text ?? (isUp ? statusText.up : statusText.down);
+
+  const dotColorClass =
+    badgeVariant === 'success'
+      ? 'bg-emerald-500 animate-pulse shadow-xs shadow-emerald-500/50'
+      : badgeVariant === 'warning'
+      ? 'bg-amber-500 animate-pulse shadow-xs shadow-amber-500/50'
+      : badgeVariant === 'info'
+      ? 'bg-sky-500 animate-pulse shadow-xs shadow-sky-500/50'
+      : 'bg-red-500';
+
+  const textColorClass =
+    badgeVariant === 'success'
+      ? 'text-emerald-600 dark:text-emerald-400 font-bold text-[11px]'
+      : badgeVariant === 'warning'
+      ? 'text-amber-600 dark:text-amber-400 font-bold text-[11px]'
+      : badgeVariant === 'info'
+      ? 'text-sky-600 dark:text-sky-400 font-bold text-[11px]'
+      : 'text-destructive font-bold text-[11px]';
+
   return (
     <Card className="relative overflow-hidden border-border/80 hover-lift bg-card/90 shadow-2xs">
       <CardHeader className="pb-2">
@@ -47,19 +75,9 @@ export const HealthServiceCard = ({
             <span>{title}</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                isUp ? 'bg-emerald-500 animate-pulse shadow-xs shadow-emerald-500/50' : 'bg-red-500'
-              }`}
-            />
-            <span
-              className={
-                isUp
-                  ? 'text-emerald-600 dark:text-emerald-400 font-bold text-[11px]'
-                  : 'text-destructive font-bold text-[11px]'
-              }
-            >
-              <span>{isUp ? statusText.up : statusText.down}</span>
+            <span className={`h-2.5 w-2.5 rounded-full ${dotColorClass}`} />
+            <span className={textColorClass}>
+              <span>{badgeText}</span>
             </span>
           </div>
         </div>
@@ -101,4 +119,3 @@ export const HealthServiceCard = ({
     </Card>
   );
 };
-

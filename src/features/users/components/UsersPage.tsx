@@ -5,7 +5,7 @@ import { UsersTable } from './UsersTable';
 import { MobileUserCards } from './MobileUserCards';
 import { useUsersQuery } from '../hooks/use-users';
 import { useUIStore } from '@/stores/use-ui-store';
-import type { UserRecord } from '@/types';
+import type { UserRecord } from '@/types/users.types';
 
 // Deterministic mock users for fallback if API is not yet seeded
 const FALLBACK_USERS: UserRecord[] = [

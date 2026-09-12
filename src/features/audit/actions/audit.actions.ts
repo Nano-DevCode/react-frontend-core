@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import type { AuditLogRecord } from '@/types';
+import type { AuditLogRecord } from '@/types/audit.types';
 
 export const fetchAuditLogsAction = async (): Promise<AuditLogRecord[]> => {
   try {

@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import type { FeatureFlagRecord, BetaFeatureResponse } from '@/types';
+import type { FeatureFlagRecord, BetaFeatureResponse } from '@/types/feature-flags.types';
 
 export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
   {
