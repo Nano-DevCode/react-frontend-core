@@ -1,0 +1,104 @@
+import type { LucideIcon } from 'lucide-react';
+import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LatencySparkline } from './LatencySparkline';
+
+export interface HealthFooterItem {
+  label: string;
+  value: string;
+  icon?: LucideIcon;
+}
+
+export interface HealthServiceCardProps {
+  title: string;
+  icon: LucideIcon;
+  iconColorClass?: string;
+  description: string;
+  isUp: boolean;
+  statusText?: { up: string; down: string };
+  latencyMetric: string;
+  latencySubtitle: string;
+  techBadge: string;
+  sparklineData: Array<{ time: string; latency: number }>;
+  sparklineColor: string;
+  footerItems: HealthFooterItem[];
+}
+
+export const HealthServiceCard = ({
+  title,
+  icon: Icon,
+  iconColorClass = 'text-primary',
+  description,
+  isUp,
+  statusText = { up: 'OPERACIONAL', down: 'ERROR' },
+  latencyMetric,
+  latencySubtitle,
+  techBadge,
+  sparklineData,
+  sparklineColor,
+  footerItems,
+}: HealthServiceCardProps) => {
+  return (
+    <Card className="relative overflow-hidden border-border/80 hover-lift bg-card/90 shadow-2xs">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div className={`flex items-center gap-2 font-semibold text-xs ${iconColorClass}`}>
+            <Icon className="h-4 w-4" />
+            <span>{title}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                isUp ? 'bg-emerald-500 animate-pulse shadow-xs shadow-emerald-500/50' : 'bg-red-500'
+              }`}
+            />
+            <span
+              className={
+                isUp
+                  ? 'text-emerald-600 dark:text-emerald-400 font-bold text-[11px]'
+                  : 'text-destructive font-bold text-[11px]'
+              }
+            >
+              <span>{isUp ? statusText.up : statusText.down}</span>
+            </span>
+          </div>
+        </div>
+        <CardDescription className="text-xs">
+          <span>{description}</span>
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        <div className="flex items-baseline justify-between pt-1">
+          <div className="flex flex-col">
+            <span className="text-3xl font-bold font-mono tracking-tight text-foreground">
+              <span>{latencyMetric}</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              <span>{latencySubtitle}</span>
+            </span>
+          </div>
+          <Badge variant="outline" className="text-[10px] font-mono">
+            <span>{techBadge}</span>
+          </Badge>
+        </div>
+
+        <LatencySparkline data={sparklineData} color={sparklineColor} />
+
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+          {footerItems.map((item) => {
+            const ItemIcon = item.icon;
+            return (
+              <div key={item.label} className="flex items-center gap-1">
+                {ItemIcon && <ItemIcon className="h-3 w-3 text-emerald-500" />}
+                <span>{item.label}:</span>{' '}
+                <strong className="text-foreground font-semibold">{item.value}</strong>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+

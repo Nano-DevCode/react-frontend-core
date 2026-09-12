@@ -1,0 +1,102 @@
+import type { AuditLogRecord } from '@/types';
+
+export const FALLBACK_AUDIT_LOGS: AuditLogRecord[] = [
+  {
+    id: 'log-001',
+    userId: 'f1e2d3c4-b5a6-7890-1234-56789abcdef0',
+    action: 'UPDATE_USER',
+    entity: 'users',
+    entityId: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    ipAddress: '192.168.1.45',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0',
+    method: 'PATCH',
+    endpoint: '/users/a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d/roles',
+    details: {
+      before: {
+        role: 'user',
+        permissions: ['files.read'],
+        isActive: true,
+      },
+      after: {
+        role: 'admin',
+        permissions: ['files.*', 'users:*'],
+        isActive: true,
+      },
+    },
+    createdAt: '2026-09-10T14:32:05.000Z',
+    user: {
+      id: 'f1e2d3c4-b5a6-7890-1234-56789abcdef0',
+      email: 'admin@empresa.com',
+      name: 'Administrador Principal',
+    },
+  },
+  {
+    id: 'log-002',
+    userId: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    action: 'UPLOAD_FILE',
+    entity: 'files',
+    entityId: '1725973200000-contrato_anual.webp',
+    ipAddress: '201.140.88.12',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Firefox/128.0',
+    method: 'POST',
+    endpoint: '/files/upload',
+    details: {
+      originalName: 'contrato_anual.png',
+      convertedTo: 'image/webp',
+      originalSize: 745120,
+      optimizedSize: 245120,
+      reductionPercent: '-67%',
+      clamavStatus: 'CLEAN',
+    },
+    createdAt: '2026-09-10T14:15:20.000Z',
+    user: {
+      id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+      email: 'carlos.silva@empresa.com',
+      name: 'Carlos Silva',
+    },
+  },
+  {
+    id: 'log-003',
+    userId: 'f1e2d3c4-b5a6-7890-1234-56789abcdef0',
+    action: 'LOGIN',
+    entity: 'auth',
+    entityId: null,
+    ipAddress: '192.168.1.45',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0',
+    method: 'POST',
+    endpoint: '/auth/login',
+    details: {
+      twoFactorValidated: true,
+      trustedDeviceGranted: true,
+      loginMethod: 'PASSWORD_AND_TOTP',
+    },
+    createdAt: '2026-09-10T13:45:00.000Z',
+    user: {
+      id: 'f1e2d3c4-b5a6-7890-1234-56789abcdef0',
+      email: 'admin@empresa.com',
+      name: 'Administrador Principal',
+    },
+  },
+  {
+    id: 'log-004',
+    userId: 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f',
+    action: 'DELETE_FILE',
+    entity: 'files',
+    entityId: '1725960000000-borrador_obsoleto.pdf',
+    ipAddress: '189.200.15.4',
+    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) Safari/537.36',
+    method: 'DELETE',
+    endpoint: '/files/1725960000000-borrador_obsoleto.pdf',
+    details: {
+      deletedKey: '1725960000000-borrador_obsoleto.pdf',
+      status: 'DELETED_FROM_SEAWEEDFS',
+    },
+    createdAt: '2026-09-10T11:20:10.000Z',
+    user: {
+      id: 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f',
+      email: 'marta.lopez@empresa.com',
+      name: 'Marta López',
+    },
+  },
+];
+
