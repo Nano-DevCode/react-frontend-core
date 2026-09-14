@@ -41,57 +41,99 @@ const getSocketEndpoint = (): string => {
   return '/realtime/notifications';
 };
 
+// Instancia compartida del socket a nivel de módulo para evitar que el doble montaje
+// de React StrictMode en desarrollo aborte abruptamente la conexión WebSocket en vuelo.
+let sharedSocket: Socket | null = null;
+let currentToken: string | null = null;
+let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let activeSubscribers = 0;
+
 export const useNotificationsSocket = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated, accessToken } = useAuthStore();
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(() => sharedSocket);
+  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(sharedSocket?.connected));
 
   useEffect(() => {
-    // Si no está autenticado, no abrir conexión WebSocket
+    // Si el usuario no está autenticado, cerrar socket activo si existiera y resetear
     if (!isAuthenticated) {
+      if (sharedSocket) {
+        sharedSocket.disconnect();
+        sharedSocket = null;
+        currentToken = null;
+      }
       return;
     }
 
-    const socketEndpoint = getSocketEndpoint();
-    console.log(`[NotificationsSocket] Iniciando conexión WebSocket hacia: ${socketEndpoint}`);
+    // Cancelar cualquier temporizador de desconexión pendiente (típico en React StrictMode)
+    if (disconnectTimer) {
+      clearTimeout(disconnectTimer);
+      disconnectTimer = null;
+    }
 
-    const socketInstance: Socket = io(socketEndpoint, {
-      path: '/socket.io',
-      transports: ['websocket', 'polling'],
-      withCredentials: true,
-      auth: {
-        token: accessToken || undefined,
-      },
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 2000,
-    });
+    activeSubscribers++;
+
+    // Si ya existe un socket pero el token cambió, reconectar con el nuevo token
+    if (sharedSocket && currentToken !== accessToken) {
+      sharedSocket.disconnect();
+      sharedSocket = null;
+    }
+
+    const socketEndpoint = getSocketEndpoint();
+
+    if (!sharedSocket || sharedSocket.disconnected) {
+      console.log(`[NotificationsSocket] Iniciando conexión WebSocket hacia: ${socketEndpoint}`);
+      currentToken = accessToken || null;
+
+      sharedSocket = io(socketEndpoint, {
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
+        withCredentials: true,
+        auth: {
+          token: accessToken || undefined,
+        },
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 2000,
+      });
+    }
+
+    const currentSocket = sharedSocket;
 
     // Handshake: Evento connect
-    socketInstance.on('connect', () => {
+    const onConnect = () => {
       console.log(
-        `[NotificationsSocket] Conectado exitosamente al namespace "/realtime/notifications" (Socket ID: ${socketInstance.id})`,
+        `[NotificationsSocket] Conectado exitosamente al namespace "/realtime/notifications" (Socket ID: ${currentSocket.id})`,
       );
       setIsConnected(true);
-      setSocket(socketInstance);
-    });
+      setSocket(currentSocket);
+    };
 
     // Handshake: Evento disconnect
-    socketInstance.on('disconnect', (reason) => {
+    const onDisconnect = (reason: string) => {
       console.log(`[NotificationsSocket] Desconectado del WebSocket. Causa: ${reason}`);
       setIsConnected(false);
-      setSocket(null);
-    });
+    };
 
     // Handshake: Evento connect_error
-    socketInstance.on('connect_error', (error) => {
+    const onConnectError = (error: Error) => {
       console.warn(
         `[NotificationsSocket] Error de conexión WebSocket hacia "${socketEndpoint}":`,
         error.message,
       );
       setIsConnected(false);
-    });
+    };
+
+    if (currentSocket.connected) {
+      queueMicrotask(() => {
+        setIsConnected(true);
+        setSocket(currentSocket);
+      });
+    } else {
+      queueMicrotask(() => {
+        setSocket(currentSocket);
+      });
+    }
 
     // Manejador unificado de eventos de notificación en tiempo real
     const handleNotification = (
@@ -161,17 +203,32 @@ export const useNotificationsSocket = () => {
       }
     };
 
-    // Escucha bidireccional tanto para 'notification' (emitido por backend) como 'notification:new'
-    socketInstance.on('notification', handleNotification);
-    socketInstance.on('notification:new', handleNotification);
+    currentSocket.on('connect', onConnect);
+    currentSocket.on('disconnect', onDisconnect);
+    currentSocket.on('connect_error', onConnectError);
+    currentSocket.on('notification', handleNotification);
+    currentSocket.on('notification:new', handleNotification);
 
     return () => {
-      console.log('[NotificationsSocket] Limpiando listeners y desconectando socket...');
-      socketInstance.off('notification', handleNotification);
-      socketInstance.off('notification:new', handleNotification);
-      socketInstance.disconnect();
-      setIsConnected(false);
-      setSocket(null);
+      activeSubscribers = Math.max(0, activeSubscribers - 1);
+      currentSocket.off('connect', onConnect);
+      currentSocket.off('disconnect', onDisconnect);
+      currentSocket.off('connect_error', onConnectError);
+      currentSocket.off('notification', handleNotification);
+      currentSocket.off('notification:new', handleNotification);
+
+      // Si no quedan componentes suscritos, programar desconexión con debounce
+      // para tolerar el remonte inmediato de React StrictMode sin cancelar el handshake TCP en vuelo
+      if (activeSubscribers === 0) {
+        disconnectTimer = setTimeout(() => {
+          if (activeSubscribers === 0 && sharedSocket) {
+            console.log('[NotificationsSocket] Desconectando socket por inactividad.');
+            sharedSocket.disconnect();
+            sharedSocket = null;
+            currentToken = null;
+          }
+        }, 1500);
+      }
     };
   }, [isAuthenticated, accessToken, queryClient]);
 
