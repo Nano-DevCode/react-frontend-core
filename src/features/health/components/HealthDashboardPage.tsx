@@ -10,6 +10,7 @@ import {
 import { BentoGridSkeleton } from '@/components/shared/BentoGridSkeleton';
 import { HealthDashboardHeader } from './HealthDashboardHeader';
 import { HealthServiceCard } from './HealthServiceCard';
+import { TelemetryMetricsSection } from './TelemetryMetricsSection';
 import {
   MOCK_DB_SPARKLINE,
   MOCK_REPLICA_SPARKLINE,
@@ -257,6 +258,9 @@ export default function HealthDashboardPage() {
           />
         )}
       </div>
+
+      {/* Fila 2: Telemetría Operativa y Seguridad Perimetral */}
+      <TelemetryMetricsSection autoRefresh={autoRefresh} />
     </div>
   );
 }

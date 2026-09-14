@@ -56,5 +56,8 @@ export const API_ENDPOINTS = {
     CLIENT: '/logs/client',
     STATS: '/logs/stats',
   },
+  SYSTEM: {
+    TELEMETRY: '/system/telemetry',
+  },
 } as const;
 

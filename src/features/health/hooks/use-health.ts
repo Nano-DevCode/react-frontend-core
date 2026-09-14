@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchHealthStatusAction } from '../actions/health.actions';
+import { fetchHealthStatusAction, fetchSystemTelemetryAction } from '../actions/health.actions';
 
 export const useHealthCheckQuery = (autoRefresh = true) => {
   return useQuery({
@@ -10,3 +10,11 @@ export const useHealthCheckQuery = (autoRefresh = true) => {
   });
 };
 
+export const useSystemTelemetryQuery = (autoRefresh = true) => {
+  return useQuery({
+    queryKey: ['system', 'telemetry'],
+    queryFn: fetchSystemTelemetryAction,
+    refetchInterval: autoRefresh ? 15000 : false, // Auto-refresh cada 15 segundos para telemetría activa
+    refetchIntervalInBackground: false,
+  });
+};
