@@ -211,3 +211,4 @@ export const LogDetailModal = ({
     </Dialog>
   );
 };
+

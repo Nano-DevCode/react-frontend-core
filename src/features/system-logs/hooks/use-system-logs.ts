@@ -22,3 +22,4 @@ export const useSystemLogStats = () => {
     refetchInterval: 1000 * 60, // Recarga automática cada 60 segundos
   });
 };
+

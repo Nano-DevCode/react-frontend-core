@@ -55,3 +55,4 @@ export interface ClientLogPayload {
   metadata?: Record<string, unknown>;
   userId?: string;
 }
+

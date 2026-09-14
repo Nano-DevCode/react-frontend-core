@@ -68,3 +68,4 @@ export const reportClientLogAction = async (
     // Silenciar errores en el envío de logs para no desencadenar cascadas de errores
   }
 };
+

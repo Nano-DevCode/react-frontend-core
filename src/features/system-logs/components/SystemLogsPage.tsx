@@ -13,7 +13,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Terminal,
+  PlusCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { reportClientLogAction } from '../actions/system-logs.actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +50,7 @@ export const SystemLogsPage = () => {
 
   const [selectedLog, setSelectedLog] = useState<SystemLogRecord | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isCreatingTestLog, setIsCreatingTestLog] = useState(false);
 
   const {
     data: logsData,
@@ -64,6 +68,30 @@ export const SystemLogsPage = () => {
   const handleRefresh = () => {
     void refetchLogs();
     void refetchStats();
+  };
+
+  const handleCreateTestLog = async () => {
+    setIsCreatingTestLog(true);
+    try {
+      await reportClientLogAction({
+        level: 'WARN',
+        context: 'TestLogGenerator',
+        message: 'Log de prueba generado manualmente desde la interfaz de administración',
+        metadata: {
+          timestamp: new Date().toISOString(),
+          testOrigin: 'SystemLogsPage',
+          screen: 'Web Admin Dashboard',
+        },
+      });
+      toast.success('Log de prueba enviado. Procesando en cola...');
+      setTimeout(() => {
+        handleRefresh();
+        setIsCreatingTestLog(false);
+      }, 700);
+    } catch {
+      toast.error('Error al generar log de prueba');
+      setIsCreatingTestLog(false);
+    }
   };
 
   const handleInspectLog = (log: SystemLogRecord) => {
@@ -143,6 +171,18 @@ export const SystemLogsPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCreateTestLog}
+            disabled={isCreatingTestLog}
+            className="h-9 gap-1.5 shadow-xs text-muted-foreground hover:text-foreground"
+          >
+            <PlusCircle
+              className={`w-3.5 h-3.5 ${isCreatingTestLog ? 'animate-spin' : ''}`}
+            />
+            <span>Log de Prueba</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -479,3 +519,4 @@ export const SystemLogsPage = () => {
 };
 
 export default SystemLogsPage;
+

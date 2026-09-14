@@ -3,39 +3,10 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FileDropzone } from './FileDropzone';
 import { FileGallery } from './FileGallery';
-import { getFileViewUrl } from '@/utils/file-url';
 import type { UploadResult } from '@/types/files.types';
 
-// Mock files list for initial demonstration
-const INITIAL_FILES: UploadResult[] = [
-  {
-    key: '1725973200000-contrato_anual.webp',
-    bucket: 'sistema-files',
-    url: getFileViewUrl('1725973200000-contrato_anual.webp'),
-    size: 245120,
-    mimetype: 'image/webp',
-    originalName: 'contrato_anual.png',
-    filename: 'contrato_anual.png',
-  },
-  {
-    key: '1725973200001-reporte_financiero_q3.pdf',
-    bucket: 'sistema-files',
-    url: getFileViewUrl('1725973200001-reporte_financiero_q3.pdf'),
-    size: 890200,
-    mimetype: 'application/pdf',
-    originalName: 'Reporte_Financiero_Q3.pdf',
-    filename: 'Reporte_Financiero_Q3.pdf',
-  },
-  {
-    key: '1725973200002-foto_perfil_corporativo.webp',
-    bucket: 'sistema-files',
-    url: getFileViewUrl('1725973200002-foto_perfil_corporativo.webp'),
-    size: 180400,
-    mimetype: 'image/webp',
-    originalName: 'foto_perfil_corporativo.jpg',
-    filename: 'foto_perfil_corporativo.jpg',
-  },
-];
+// Initial files list starts empty until uploaded
+const INITIAL_FILES: UploadResult[] = [];
 
 export default function S3FilesPage() {
   const [files, setFiles] = useState<UploadResult[]>(INITIAL_FILES);
