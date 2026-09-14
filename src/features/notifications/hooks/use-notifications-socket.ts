@@ -42,12 +42,13 @@ const getSocketEndpoint = (): string => {
 };
 
 // =============================================================================
-// GESTOR SINGLETON DE WEBSOCKET (SOCKET.IO)
-// Control de referencias estricto para evitar duplicación de conexiones simultáneas.
+// GESTOR SINGLETON PERSISTENTE DE WEBSOCKET (SOCKET.IO)
+// Evita conexiones simultáneas y previene la cancelación en vuelo de React StrictMode.
 // =============================================================================
 let sharedSocket: Socket | null = null;
 let currentToken: string | null = null;
-let listenersCount = 0;
+let subscribersCount = 0;
+let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useNotificationsSocket = () => {
   const queryClient = useQueryClient();
@@ -58,22 +59,32 @@ export const useNotificationsSocket = () => {
   useEffect(() => {
     // Si el usuario no está autenticado, desconectar inmediatamente cualquier socket residual
     if (!isAuthenticated) {
+      if (disconnectTimer) {
+        clearTimeout(disconnectTimer);
+        disconnectTimer = null;
+      }
       if (sharedSocket) {
-        console.log('[NotificationsSocket] Usuario desautenticado. Desconectando socket.');
+        console.log('[NotificationsSocket] Usuario no autenticado. Desconectando socket.');
         sharedSocket.removeAllListeners();
         sharedSocket.disconnect();
         sharedSocket = null;
         currentToken = null;
-        listenersCount = 0;
+        subscribersCount = 0;
       }
       return;
     }
 
-    listenersCount++;
+    // Cancelar cualquier temporizador de desconexión pendiente (producido en React StrictMode)
+    if (disconnectTimer) {
+      clearTimeout(disconnectTimer);
+      disconnectTimer = null;
+    }
+
+    subscribersCount++;
 
     const socketEndpoint = getSocketEndpoint();
 
-    // Si ya existe un socket pero cambió el token de autenticación, forzar reconexión limpia
+    // Si el token cambió (renovación de sesión o cambio de usuario), cerrar y recrear
     if (sharedSocket && currentToken !== accessToken) {
       console.log('[NotificationsSocket] Token actualizado. Desconectando conexión anterior.');
       sharedSocket.removeAllListeners();
@@ -82,8 +93,8 @@ export const useNotificationsSocket = () => {
       currentToken = null;
     }
 
-    // Inicializar instancia Singleton si no existe o se encuentra desconectada
-    if (!sharedSocket || sharedSocket.disconnected) {
+    // Inicializar instancia Singleton si no existe actualmente
+    if (!sharedSocket) {
       console.log(`[NotificationsSocket] Iniciando conexión Singleton hacia: ${socketEndpoint}`);
       currentToken = accessToken || null;
 
@@ -115,7 +126,13 @@ export const useNotificationsSocket = () => {
     const onDisconnect = (reason: string) => {
       console.log(`[NotificationsSocket] Desconectado del WebSocket. Causa: ${reason}`);
       setIsConnected(false);
-      setSocket(null);
+      if (reason === 'io server disconnect') {
+        // Desconexión iniciada por el servidor: requiere reconexión manual
+        if (sharedSocket === currentSocket) {
+          sharedSocket = null;
+          currentToken = null;
+        }
+      }
     };
 
     // Handshake: Evento connect_error
@@ -213,22 +230,25 @@ export const useNotificationsSocket = () => {
     }
 
     return () => {
-      listenersCount = Math.max(0, listenersCount - 1);
+      subscribersCount = Math.max(0, subscribersCount - 1);
       currentSocket.off('connect', onConnect);
       currentSocket.off('disconnect', onDisconnect);
       currentSocket.off('connect_error', onConnectError);
       currentSocket.off('notification', handleNotification);
       currentSocket.off('notification:new', handleNotification);
 
-      // Si no quedan suscriptores activos (desmontaje del componente o StrictMode),
-      // desconectar el socket inmediatamente para no dejarlo huérfano en el backend
-      if (listenersCount === 0) {
-        console.log('[NotificationsSocket] Sin suscriptores activos. Desconectando socket residual.');
-        currentSocket.disconnect();
-        if (sharedSocket === currentSocket) {
-          sharedSocket = null;
-          currentToken = null;
-        }
+      // Si no quedan suscriptores activos, programar desconexión con una pequeña ventana de gracia (debounce)
+      // para tolerar el remonte inmediato de React StrictMode sin cancelar el handshake TCP en vuelo
+      // ni dejar conexiones huérfanas en el backend.
+      if (subscribersCount === 0) {
+        disconnectTimer = setTimeout(() => {
+          if (subscribersCount === 0 && sharedSocket) {
+            console.log('[NotificationsSocket] Sin suscriptores activos. Desconectando socket.');
+            sharedSocket.disconnect();
+            sharedSocket = null;
+            currentToken = null;
+          }
+        }, 1000);
       }
     };
   }, [isAuthenticated, accessToken, queryClient]);
