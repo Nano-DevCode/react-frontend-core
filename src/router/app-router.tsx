@@ -17,6 +17,7 @@ const AuditLogsPage = lazy(() => import('@/features/audit/components/AuditLogsPa
 const HealthDashboardPage = lazy(() => import('@/features/health/components/HealthDashboardPage'));
 const TwoFactorSetupPage = lazy(() => import('@/features/two-factor/components/TwoFactorSetupPage'));
 const FeatureFlagsPage = lazy(() => import('@/features/feature-flags/components/FeatureFlagsPage'));
+const SystemLogsPage = lazy(() => import('@/features/system-logs/components/SystemLogsPage'));
 
 export const router = createBrowserRouter([
   // Rutas Públicas de Autenticación
@@ -124,6 +125,20 @@ export const router = createBrowserRouter([
             </Suspense>
           </RoleGuard>
         ),
+      },
+      {
+        path: 'admin/logs',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <Suspense fallback={<TableSkeleton rows={8} columns={6} />}>
+              <SystemLogsPage />
+            </Suspense>
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'logs',
+        element: <Navigate to="/admin/logs" replace />,
       },
       {
         path: '*',

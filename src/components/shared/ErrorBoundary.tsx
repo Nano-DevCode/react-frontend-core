@@ -9,6 +9,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { reportClientLogAction } from '@/features/system-logs/actions/system-logs.actions';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -57,6 +58,20 @@ export class ErrorBoundary extends Component<
     if (import.meta.env.DEV && typeof console !== 'undefined' && console.error) {
       console.error('[ErrorBoundary caught error]:', error, errorInfo);
     }
+
+    // Reporte automático hacia el Administrador de Logs Unificado (Backend)
+    void reportClientLogAction({
+      level: 'FATAL',
+      context: 'ErrorBoundaryReact',
+      message: error.message || 'Error no capturado en la renderización de React',
+      stackTrace: error.stack,
+      metadata: {
+        componentStack: errorInfo.componentStack,
+        incidentId: this.state.incidentId,
+        url: typeof window !== 'undefined' ? window.location.href : '',
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      },
+    });
   }
 
   handleReset = (): void => {

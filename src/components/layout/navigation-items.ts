@@ -6,6 +6,7 @@ import {
   Flag,
   LayoutDashboard,
   KeyRound,
+  Terminal,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -61,6 +62,13 @@ export const navigationItems: NavigationItem[] = [
     icon: Flag,
     roles: ['admin'],
     badge: 'Beta',
+  },
+  {
+    title: 'Logs del Sistema',
+    path: '/admin/logs',
+    icon: Terminal,
+    roles: ['admin'],
+    badge: 'Admin',
   },
 ];
 

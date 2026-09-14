@@ -3,6 +3,7 @@ import { Menu, LogOut, ShieldCheck, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
+import { NotificationCenter } from '@/features/notifications/components/notification-center';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,8 +81,9 @@ export const Navbar = ({ onOpenMobileMenu }: NavbarProps) => {
         </div>
       </div>
 
-      {/* Right section: Theme toggle & user menu */}
+      {/* Right section: Notification center, theme toggle & user menu */}
       <div className="flex items-center gap-2 sm:gap-3">
+        <NotificationCenter />
         <ThemeToggle />
 
         <DropdownMenu>

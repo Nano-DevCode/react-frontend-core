@@ -40,5 +40,21 @@ export const API_ENDPOINTS = {
   AUDIT: {
     BASE: '/audit',
   },
+  PDF: {
+    GENERATE: '/pdf/generate',
+    PREVIEW_SYNC: '/pdf/preview-sync',
+  },
+  NOTIFICATIONS: {
+    BASE: '/notifications',
+    UNREAD_COUNT: '/notifications/unread-count',
+    BY_ID: (id: string) => `/notifications/${encodeURIComponent(id)}`,
+    MARK_AS_READ: (id: string) => `/notifications/${encodeURIComponent(id)}/read`,
+    MARK_ALL_READ: '/notifications/read-all',
+  },
+  LOGS: {
+    BASE: '/logs',
+    CLIENT: '/logs/client',
+    STATS: '/logs/stats',
+  },
 } as const;
 

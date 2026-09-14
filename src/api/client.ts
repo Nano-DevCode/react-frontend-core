@@ -83,11 +83,14 @@ apiClient.interceptors.response.use(
       }
     }
 
+    const status = error.response?.status;
+    const backendMessage = error.response?.data?.message;
+
     // Manejo global para Rate Limiting (HTTP 429 - Too Many Requests)
-    if (error.response?.status === 429) {
+    if (status === 429) {
       const retryAfterHeader =
-        error.response.headers?.['retry-after'] ||
-        error.response.headers?.['Retry-After'];
+        error.response?.headers?.['retry-after'] ||
+        error.response?.headers?.['Retry-After'];
 
       let retryAfterSeconds: number | null = null;
       if (retryAfterHeader) {
@@ -113,13 +116,77 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Captura uniforme del mensaje de error del backend
-    const backendMessage = error.response?.data?.message;
+    // Manejo global para Errores de Validación (HTTP 400 - Bad Request)
+    if (status === 400) {
+      if (!originalRequest?.suppressToast) {
+        const validationMsg = Array.isArray(backendMessage)
+          ? backendMessage.join('. ')
+          : backendMessage || 'Error de validación en la solicitud enviada.';
+        toast.error(validationMsg, { id: 'validation-error' });
+      }
+      return Promise.reject(error);
+    }
+
+    // Manejo global para No Autorizado (HTTP 401 - Unauthorized)
+    if (status === 401) {
+      if (!originalRequest?.suppressToast) {
+        const authMsg = Array.isArray(backendMessage)
+          ? backendMessage.join('. ')
+          : backendMessage || 'Sesión no autorizada o credenciales incorrectas.';
+        toast.error(authMsg, { id: 'auth-error' });
+      }
+      return Promise.reject(error);
+    }
+
+    // Manejo global para Prohibido / Permisos Insuficientes (HTTP 403 - Forbidden)
+    if (status === 403) {
+      if (!originalRequest?.suppressToast) {
+        const forbiddenMsg = Array.isArray(backendMessage)
+          ? backendMessage.join('. ')
+          : backendMessage || 'Acceso denegado: No tienes permisos suficientes para realizar esta acción.';
+        toast.error(forbiddenMsg, { id: 'forbidden-error' });
+      }
+      return Promise.reject(error);
+    }
+
+    // Captura uniforme de cualquier otro mensaje de error del backend (500, etc.)
     if (backendMessage && !originalRequest?.suppressToast) {
       const displayMsg = Array.isArray(backendMessage)
         ? backendMessage.join(', ')
         : backendMessage;
       toast.error(displayMsg);
+    }
+
+    // Reportar fallos 5xx de servidor y caídas de red al Administrador de Logs
+    const isLogEndpoint = originalRequest?.url?.includes('/logs/client');
+    const isServerError = !status || status >= 500;
+    if (isServerError && !isLogEndpoint) {
+      try {
+        const payload = {
+          level: 'ERROR',
+          context: 'AxiosInterceptor',
+          message:
+            error.message ||
+            (typeof backendMessage === 'string'
+              ? backendMessage
+              : 'Error de servidor o conectividad'),
+          stackTrace: error.stack,
+          metadata: {
+            url: originalRequest?.url,
+            method: originalRequest?.method,
+            status,
+          },
+        };
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        void fetch(`${apiUrl}/logs/client`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      } catch {
+        // Silenciar errores secundarios en el reporte
+      }
     }
 
     return Promise.reject(error);
