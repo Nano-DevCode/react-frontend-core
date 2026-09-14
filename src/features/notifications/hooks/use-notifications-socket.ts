@@ -8,19 +8,37 @@ import {
   NOTIFICATIONS_QUERY_KEY,
   UNREAD_COUNT_QUERY_KEY,
 } from './use-notifications';
-import type { AppNotification } from '@/types/notification.types';
+import type { AppNotification, NotificationData } from '@/types/notification.types';
 
-const getSocketBaseUrl = (): string => {
+/**
+ * Resuelve dinámicamente el endpoint del WebSocket apuntando explícitamente
+ * al namespace '/realtime/notifications' configurado en NestJS.
+ */
+const getSocketEndpoint = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) {
     try {
       const parsed = new URL(envUrl);
-      return parsed.origin;
+      return `${parsed.origin}/realtime/notifications`;
     } catch {
-      // Fallback
+      // Fallback si la URL es inválida
     }
   }
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    window.location.port !== '3000' &&
+    window.location.port !== '80' &&
+    window.location.port !== '443' &&
+    window.location.port !== ''
+  ) {
+    // Entorno de desarrollo local con Vite (puertos 5173, 5174, etc.)
+    return 'http://localhost:3000/realtime/notifications';
+  }
+
+  // En producción (detrás de NGINX Reverse Proxy con proxy_pass) o ruta relativa
+  return '/realtime/notifications';
 };
 
 export const useNotificationsSocket = () => {
@@ -35,8 +53,8 @@ export const useNotificationsSocket = () => {
       return;
     }
 
-    const baseUrl = getSocketBaseUrl();
-    const socketEndpoint = `${baseUrl}/realtime/notifications`;
+    const socketEndpoint = getSocketEndpoint();
+    console.log(`[NotificationsSocket] Iniciando conexión WebSocket hacia: ${socketEndpoint}`);
 
     const socketInstance: Socket = io(socketEndpoint, {
       path: '/socket.io',
@@ -47,36 +65,61 @@ export const useNotificationsSocket = () => {
       },
       reconnection: true,
       reconnectionAttempts: 10,
-      reconnectionDelay: 2500,
+      reconnectionDelay: 2000,
     });
 
+    // Handshake: Evento connect
     socketInstance.on('connect', () => {
+      console.log(
+        `[NotificationsSocket] Conectado exitosamente al namespace "/realtime/notifications" (Socket ID: ${socketInstance.id})`,
+      );
       setIsConnected(true);
       setSocket(socketInstance);
     });
 
-    socketInstance.on('disconnect', () => {
+    // Handshake: Evento disconnect
+    socketInstance.on('disconnect', (reason) => {
+      console.log(`[NotificationsSocket] Desconectado del WebSocket. Causa: ${reason}`);
       setIsConnected(false);
       setSocket(null);
     });
 
+    // Handshake: Evento connect_error
     socketInstance.on('connect_error', (error) => {
-      console.warn('[NotificationsSocket] Error de conexión WebSocket:', error.message);
+      console.warn(
+        `[NotificationsSocket] Error de conexión WebSocket hacia "${socketEndpoint}":`,
+        error.message,
+      );
       setIsConnected(false);
     });
 
-    // Escucha del evento 'notification:new'
-    socketInstance.on('notification:new', (payload: AppNotification | { notification: AppNotification }) => {
-      const notification: AppNotification =
-        'notification' in payload && payload.notification
-          ? payload.notification
-          : (payload as AppNotification);
+    // Manejador unificado de eventos de notificación en tiempo real
+    const handleNotification = (
+      payload: AppNotification | { notification: AppNotification } | Record<string, unknown>,
+    ) => {
+      console.log('[NotificationsSocket] Notificación entrante recibida:', payload);
 
-      // 1. Invalidar caché en TanStack Query para actualización instantánea
+      const rawNotif =
+        payload && typeof payload === 'object' && 'notification' in payload && payload.notification
+          ? (payload.notification as Record<string, unknown>)
+          : (payload as Record<string, unknown>);
+
+      const notification: AppNotification = {
+        id: String(rawNotif.id || Date.now()),
+        title: String(rawNotif.title || 'Nueva notificación'),
+        message: String(rawNotif.message || rawNotif.body || ''),
+        type: ((rawNotif.type as string) || 'info').toLowerCase(),
+        read: Boolean(rawNotif.read ?? rawNotif.isRead ?? false),
+        createdAt: String(rawNotif.createdAt || new Date().toISOString()),
+        data: (rawNotif.data as NotificationData) || undefined,
+        metadata: (rawNotif.metadata as Record<string, unknown>) || undefined,
+      };
+
+      // 1. Invalidar caché en TanStack Query para refresco inmediato en la UI
       queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
 
-      // 2. Preparar acción interactiva para PDFs o archivos adjuntos
+      // 2. Preparar acción interactiva para descargas de PDF o archivos adjuntos
       const fileKey = notification.data?.fileKey;
       const filename = notification.data?.filename;
 
@@ -99,7 +142,7 @@ export const useNotificationsSocket = () => {
         duration: 6000,
       };
 
-      // 3. Renderizar Toast interactivo según el tipo de notificación
+      // 3. Renderizar Toast interactivo según la severidad/tipo
       switch (notification.type) {
         case 'pdf_generated':
         case 'file_ready':
@@ -116,9 +159,16 @@ export const useNotificationsSocket = () => {
           toast.info(notification.title || 'Nueva notificación', toastOptions);
           break;
       }
-    });
+    };
+
+    // Escucha bidireccional tanto para 'notification' (emitido por backend) como 'notification:new'
+    socketInstance.on('notification', handleNotification);
+    socketInstance.on('notification:new', handleNotification);
 
     return () => {
+      console.log('[NotificationsSocket] Limpiando listeners y desconectando socket...');
+      socketInstance.off('notification', handleNotification);
+      socketInstance.off('notification:new', handleNotification);
       socketInstance.disconnect();
       setIsConnected(false);
       setSocket(null);
@@ -130,4 +180,3 @@ export const useNotificationsSocket = () => {
     socket,
   };
 };
-
