@@ -28,7 +28,7 @@ export interface TwoFactorTurnOffResponse {
 }
 
 export interface TwoFactorAuthDto {
-  tempToken: string;
+  tempToken?: string;
   code: string;
 }
 

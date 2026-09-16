@@ -4,7 +4,9 @@ import {
   fetchFeatureFlagsAction,
   toggleFeatureFlagAction,
   fetchBetaFeatureAction,
+  fetchPublicFeatureFlagsAction,
   DEFAULT_FEATURE_FLAGS,
+  type PublicFeatureFlags,
 } from '../actions/feature-flags.actions';
 import type { FeatureFlagRecord } from '@/types/feature-flags.types';
 
@@ -64,6 +66,19 @@ export const useBetaFeatureQuery = (enabled = false) => {
     queryFn: fetchBetaFeatureAction,
     enabled,
     retry: false,
+  });
+};
+
+export const usePublicFeatureFlagsQuery = () => {
+  return useQuery<PublicFeatureFlags>({
+    queryKey: ['public-feature-flags'],
+    queryFn: fetchPublicFeatureFlagsAction,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    initialData: {
+      oauth_social_login: false,
+      oauth_google: false,
+      oauth_facebook: false,
+    },
   });
 };
 

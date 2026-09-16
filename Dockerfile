@@ -20,10 +20,13 @@ RUN pnpm install --frozen-lockfile
 # Copiar el código fuente del proyecto
 COPY . .
 
+# Garantizar que ningún archivo .env local sobreescriba los argumentos de producción
+RUN rm -f .env .env.*
+
 # Argumentos de construcción para inyectar variables de entorno en el bundle de Vite
-ARG VITE_API_URL=http://localhost:3000/api
-ARG VITE_APP_NAME="SaaS Enterprise Security"
-ARG VITE_ENABLE_MOCK_FALLBACK=true
+ARG VITE_API_URL=/api
+ARG VITE_APP_NAME="Sistema Enterprise"
+ARG VITE_ENABLE_MOCK_FALLBACK=false
 
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_APP_NAME=$VITE_APP_NAME

@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
   HEALTH: '/health',
   FEATURE_FLAGS: {
     BASE: '/feature-flags',
+    PUBLIC: '/feature-flags/public',
     BY_KEY: (key: string) => `/feature-flags/${key}`,
     BETA_FEATURE: '/beta-feature',
   },

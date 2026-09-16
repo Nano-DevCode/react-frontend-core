@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, ShieldCheck, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +14,8 @@ import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { useLoginMutation } from '../hooks/use-auth';
 import { AuthHeroBanner } from './AuthHeroBanner';
 import { TwoFactorChallengeModal } from '@/features/two-factor/components/TwoFactorChallengeModal';
+import { SocialLoginButtons } from './SocialLoginButtons';
+import { syncUserSession } from '@/api/auth-session';
 
 const loginSchema = z.object({
   email: z.string().email('Ingresa un correo electrónico válido'),
@@ -25,11 +28,38 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [challengeTempToken, setChallengeTempToken] = useState<string | null>(null);
+  const [isOauth2FaOpen, setIsOauth2FaOpen] = useState(false);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [rateLimitTimer, setRateLimitTimer] = useState<number | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    if (params.get('oauth') === 'success') {
+      setIsProcessingOAuth(true);
+      syncUserSession()
+        .then(() => {
+          toast.success('¡Sesión iniciada con éxito!');
+          navigate(from, { replace: true });
+        })
+        .catch(() => {
+          toast.error('Error al sincronizar la sesión federada.');
+        })
+        .finally(() => {
+          setIsProcessingOAuth(false);
+        });
+    } else if (params.get('require2FA') === 'true') {
+      setIsOauth2FaOpen(true);
+    } else if (params.has('error')) {
+      const errorMsg = params.get('error') || 'Error en la autenticación social';
+      toast.error(decodeURIComponent(errorMsg));
+      navigate('/login', { replace: true });
+    }
+  }, [location.search, navigate, from]);
 
   const {
     register,
@@ -213,18 +243,25 @@ export default function LoginPage() {
                 type="submit"
                 variant="shimmer"
                 className="w-full h-11 text-xs font-semibold mt-2 shadow-md shadow-primary/20"
-                disabled={isPending || rateLimitTimer !== null}
+                disabled={isPending || rateLimitTimer !== null || isProcessingOAuth}
               >
-                {isPending ? (
+                {isPending || isProcessingOAuth ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    <span>Validando credenciales...</span>
+                    <span>
+                      {isProcessingOAuth
+                        ? 'Sincronizando acceso social...'
+                        : 'Validando credenciales...'}
+                    </span>
                   </>
                 ) : (
                   <span>Iniciar Sesión</span>
                 )}
               </Button>
             </form>
+
+            {/* Botones de Inicio Social (Google / Facebook) */}
+            <SocialLoginButtons />
 
             {/* Demo Quick Fill Button */}
             <div className="pt-2 border-t border-border/50 text-center">
@@ -255,16 +292,20 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Modal Desafío 2FA si el backend responde require2FA */}
-      {challengeTempToken && (
+      {/* Modal Desafío 2FA (credenciales o federado OAuth) */}
+      {(challengeTempToken || isOauth2FaOpen) && (
         <TwoFactorChallengeModal
-          open={Boolean(challengeTempToken)}
+          open={Boolean(challengeTempToken || isOauth2FaOpen)}
           tempToken={challengeTempToken}
           onSuccess={() => {
             setChallengeTempToken(null);
+            setIsOauth2FaOpen(false);
             navigate(from, { replace: true });
           }}
-          onCancel={() => setChallengeTempToken(null)}
+          onCancel={() => {
+            setChallengeTempToken(null);
+            setIsOauth2FaOpen(false);
+          }}
         />
       )}
     </div>

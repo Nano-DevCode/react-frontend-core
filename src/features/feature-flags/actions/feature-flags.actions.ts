@@ -85,3 +85,25 @@ export const fetchBetaFeatureAction = async (): Promise<BetaFeatureResponse> => 
   return response.data;
 };
 
+export interface PublicFeatureFlags {
+  oauth_social_login: boolean;
+  oauth_google: boolean;
+  oauth_facebook: boolean;
+}
+
+export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlags> => {
+  try {
+    const response = await apiClient.get<PublicFeatureFlags>(
+      API_ENDPOINTS.FEATURE_FLAGS.PUBLIC,
+      { suppressToast: true }
+    );
+    return response.data;
+  } catch {
+    return {
+      oauth_social_login: false,
+      oauth_google: false,
+      oauth_facebook: false,
+    };
+  }
+};
+

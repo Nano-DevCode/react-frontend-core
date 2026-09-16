@@ -17,7 +17,7 @@ import { useTwoFactorAuthenticateMutation } from '../hooks/use-two-factor';
 
 interface TwoFactorChallengeModalProps {
   open: boolean;
-  tempToken: string;
+  tempToken?: string | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -35,7 +35,7 @@ export const TwoFactorChallengeModal = ({
     if (e) e.preventDefault();
     if (code.length === 6) {
       authenticate(
-        { tempToken, code },
+        { tempToken: tempToken || undefined, code },
         {
           onSuccess: () => {
             onSuccess();

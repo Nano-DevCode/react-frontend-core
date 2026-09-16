@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { useRegisterMutation } from '../hooks/use-auth';
+import { SocialLoginButtons } from './SocialLoginButtons';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe contener al menos 2 caracteres').optional().or(z.literal('')),
@@ -199,7 +200,10 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <div className="text-center text-xs text-muted-foreground">
+            {/* Botones de Inicio Social (Google / Facebook) */}
+            <SocialLoginButtons />
+
+            <div className="text-center text-xs text-muted-foreground pt-1">
               <span>¿Ya posees una cuenta registrada?</span>{' '}
               <Link to="/login" className="font-semibold text-primary hover:underline">
                 <span>Inicia sesión aquí</span>

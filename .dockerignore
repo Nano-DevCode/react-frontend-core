@@ -10,6 +10,8 @@ dist-ssr
 .github
 
 # Entornos y claves locales
+.env
+.env.*
 .env.local
 .env.*.local
 

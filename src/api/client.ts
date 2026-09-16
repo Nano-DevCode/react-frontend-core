@@ -27,9 +27,10 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const isAuthRoute =
     config.url?.includes('/auth/login') ||
     config.url?.includes('/auth/refresh') ||
-    config.url?.includes('/auth/register');
+    config.url?.includes('/auth/register') ||
+    config.url?.includes('/auth/2fa/authenticate');
 
-  // Solo inyectar Authorization si NO es una ruta de autenticación/refresco
+  // Solo inyectar Authorization si NO es una ruta de autenticación/refresco/2FA
   if (token && !isAuthRoute && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -56,10 +57,12 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    const is2faAuth = originalRequest?.url?.includes('/auth/2fa/authenticate');
     const isAuthRoute =
       originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/refresh') ||
-      originalRequest?.url?.includes('/auth/register');
+      originalRequest?.url?.includes('/auth/register') ||
+      is2faAuth;
 
     // Renovación transparente en 401 usando el servicio Single-Flight
     if (
@@ -130,10 +133,12 @@ apiClient.interceptors.response.use(
     // Manejo global para No Autorizado (HTTP 401 - Unauthorized)
     if (status === 401) {
       if (!originalRequest?.suppressToast) {
-        const authMsg = Array.isArray(backendMessage)
-          ? backendMessage.join('. ')
-          : backendMessage || 'Sesión no autorizada o credenciales incorrectas.';
-        toast.error(authMsg, { id: 'auth-error' });
+        const authMsg = is2faAuth
+          ? 'Código inválido o expirado'
+          : (Array.isArray(backendMessage)
+              ? backendMessage.join('. ')
+              : backendMessage || 'Sesión no autorizada o credenciales incorrectas.');
+        toast.error(authMsg, { id: is2faAuth ? '2fa-error' : 'auth-error' });
       }
       return Promise.reject(error);
     }
