@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { useFeatureFlag } from '@/features/feature-flags/hooks/use-feature-flags';
+
 interface ProtectedRouteProps {
   children: ReactNode;
 }
@@ -52,6 +54,26 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
         </div>
       </div>
     );
+  }
+
+  return <>{children}</>;
+};
+
+interface FeatureFlagGuardProps {
+  children: ReactNode;
+  flagKey: string;
+  fallback?: ReactNode;
+}
+
+export const FeatureFlagGuard = ({
+  children,
+  flagKey,
+  fallback,
+}: FeatureFlagGuardProps) => {
+  const isEnabled = useFeatureFlag(flagKey);
+
+  if (!isEnabled) {
+    return fallback ? <>{fallback}</> : <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

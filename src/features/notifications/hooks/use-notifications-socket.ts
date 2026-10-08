@@ -9,6 +9,8 @@ import {
   UNREAD_COUNT_QUERY_KEY,
 } from './use-notifications';
 import type { AppNotification, NotificationData } from '@/types/notification.types';
+import type { FeatureFlagRecord } from '@/types/feature-flags.types';
+import type { PublicFeatureFlags } from '@/features/feature-flags/actions/feature-flags.actions';
 
 /**
  * Resuelve dinámicamente el endpoint del WebSocket apuntando explícitamente
@@ -212,11 +214,81 @@ export const useNotificationsSocket = () => {
       }
     };
 
+    // Manejador reactivo de sincronización en tiempo real de Feature Flags
+    const handleFeatureFlagUpdated = (payload: {
+      key: string;
+      enabled: boolean;
+      roles?: string[];
+      rollout?: number;
+    }) => {
+      console.log('[Socket] Evento feature-flag:updated recibido:', payload);
+
+      // 1. Actualizar caché de feature-flags en TanStack Query inmediatamente
+      queryClient.setQueryData<FeatureFlagRecord[]>(['feature-flags'], (old = []) => {
+        const index = old.findIndex((f) => f.key === payload.key);
+        if (index >= 0) {
+          const updated = [...old];
+          updated[index] = {
+            ...updated[index],
+            isEnabled: payload.enabled,
+            rules: {
+              ...updated[index].rules,
+              percentage: payload.rollout ?? (payload.enabled ? 100 : 0),
+              allowedRoles: payload.roles ?? updated[index].rules?.allowedRoles,
+            },
+            updatedAt: new Date().toISOString(),
+          };
+          return updated;
+        }
+
+        return [
+          ...old,
+          {
+            id: `ff-${payload.key}`,
+            key: payload.key,
+            description: null,
+            isEnabled: payload.enabled,
+            rules: {
+              percentage: payload.rollout ?? (payload.enabled ? 100 : 0),
+              allowedRoles: payload.roles ?? [],
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ];
+      });
+
+      // 2. Sincronizar public-feature-flags si corresponde
+      queryClient.setQueryData<PublicFeatureFlags>(['public-feature-flags'], (old) => {
+        if (!old) return old;
+        const normalized = payload.key.toUpperCase();
+        if (normalized === 'DISCORD_BOT_ENABLED' || normalized === 'DISCORD_BOT') {
+          return { ...old, discord_bot: payload.enabled };
+        }
+        if (normalized === 'OAUTH_SOCIAL_LOGIN') {
+          return { ...old, oauth_social_login: payload.enabled };
+        }
+        if (normalized === 'OAUTH_GOOGLE') {
+          return { ...old, oauth_google: payload.enabled };
+        }
+        if (normalized === 'OAUTH_FACEBOOK') {
+          return { ...old, oauth_facebook: payload.enabled };
+        }
+        return old;
+      });
+
+      // 3. Invalidar consultas relacionadas
+      void queryClient.invalidateQueries({ queryKey: ['feature-flags'] });
+      void queryClient.invalidateQueries({ queryKey: ['public-feature-flags'] });
+      void queryClient.invalidateQueries({ queryKey: ['discord-bot-status'] });
+    };
+
     currentSocket.on('connect', onConnect);
     currentSocket.on('disconnect', onDisconnect);
     currentSocket.on('connect_error', onConnectError);
     currentSocket.on('notification', handleNotification);
     currentSocket.on('notification:new', handleNotification);
+    currentSocket.on('feature-flag:updated', handleFeatureFlagUpdated);
 
     if (currentSocket.connected) {
       queueMicrotask(() => {
@@ -236,6 +308,7 @@ export const useNotificationsSocket = () => {
       currentSocket.off('connect_error', onConnectError);
       currentSocket.off('notification', handleNotification);
       currentSocket.off('notification:new', handleNotification);
+      currentSocket.off('feature-flag:updated', handleFeatureFlagUpdated);
 
       // Si no quedan suscriptores activos, programar desconexión con una pequeña ventana de gracia (debounce)
       // para tolerar el remonte inmediato de React StrictMode sin cancelar el handshake TCP en vuelo

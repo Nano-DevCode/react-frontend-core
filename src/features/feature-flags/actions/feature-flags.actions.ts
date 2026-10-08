@@ -30,6 +30,15 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
     createdAt: '2026-09-05T10:00:00.000Z',
     updatedAt: '2026-09-08T10:00:00.000Z',
   },
+  {
+    id: 'ff-4',
+    key: 'DISCORD_BOT_ENABLED',
+    description: 'Módulo del bot de música en Discord y orquestación con Lavalink v4.',
+    isEnabled: true,
+    rules: { percentage: 100, allowedRoles: ['admin', 'user'] },
+    createdAt: '2026-09-10T10:00:00.000Z',
+    updatedAt: '2026-09-16T12:00:00.000Z',
+  },
 ];
 
 export const fetchFeatureFlagsAction = async (): Promise<FeatureFlagRecord[]> => {
@@ -89,6 +98,7 @@ export interface PublicFeatureFlags {
   oauth_social_login: boolean;
   oauth_google: boolean;
   oauth_facebook: boolean;
+  discord_bot?: boolean;
 }
 
 export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlags> => {
@@ -103,6 +113,7 @@ export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlag
       oauth_social_login: false,
       oauth_google: false,
       oauth_facebook: false,
+      discord_bot: false,
     };
   }
 };

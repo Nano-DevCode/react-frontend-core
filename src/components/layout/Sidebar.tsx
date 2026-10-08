@@ -11,15 +11,23 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { navigationItems } from './navigation-items';
+import { useFeatureFlagsQuery } from '@/features/feature-flags/hooks/use-feature-flags';
 
 export const Sidebar = () => {
   const { isSidebarCollapsed, toggleSidebar } = useUIStore();
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
+  const { data: flags = [] } = useFeatureFlagsQuery();
 
   const userRoles = user?.roles || ['user'];
   const hasAccess = (roles: string[]) =>
     roles.some((r) => userRoles.includes(r)) || userRoles.includes('admin');
+
+  const isFlagEnabled = (flagKey?: string) => {
+    if (!flagKey) return true;
+    const flag = flags.find((f) => f.key === flagKey);
+    return flag ? flag.isEnabled : false;
+  };
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -75,7 +83,7 @@ export const Sidebar = () => {
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-thin">
           {navigationItems.map((item) => {
-            if (!hasAccess(item.roles)) return null;
+            if (!hasAccess(item.roles) || !isFlagEnabled(item.featureFlag)) return null;
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
 

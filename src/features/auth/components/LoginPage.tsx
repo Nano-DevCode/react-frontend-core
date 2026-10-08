@@ -262,20 +262,6 @@ export default function LoginPage() {
 
             {/* Botones de Inicio Social (Google / Facebook) */}
             <SocialLoginButtons />
-
-            {/* Demo Quick Fill Button */}
-            <div className="pt-2 border-t border-border/50 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'admin@empresa.com');
-                  setValue('password', 'Admin123!@');
-                }}
-                className="text-[11px] font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer py-1 px-2.5 rounded-lg bg-muted/40 hover:bg-muted"
-              >
-                <span>Usar Demo: admin@empresa.com / Admin123!@</span>
-              </button>
-            </div>
           </div>
 
           {/* Enlace a Registro */}

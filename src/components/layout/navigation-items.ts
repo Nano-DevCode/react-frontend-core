@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   KeyRound,
   Terminal,
+  Headphones,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,6 +17,7 @@ export interface NavigationItem {
   icon: LucideIcon;
   roles: string[];
   badge?: string;
+  featureFlag?: string;
 }
 
 export const navigationItems: NavigationItem[] = [
@@ -69,6 +71,14 @@ export const navigationItems: NavigationItem[] = [
     icon: Terminal,
     roles: ['admin'],
     badge: 'Admin',
+  },
+  {
+    title: 'Bot Discord',
+    path: '/admin/discord-bot',
+    icon: Headphones,
+    roles: ['admin', 'user'],
+    badge: 'Bot',
+    featureFlag: 'DISCORD_BOT_ENABLED',
   },
 ];
 

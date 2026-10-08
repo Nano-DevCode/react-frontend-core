@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { BentoGridSkeleton } from '@/components/shared/BentoGridSkeleton';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
-import { ProtectedRoute, RoleGuard, PublicOnlyRoute } from './guards';
+import { ProtectedRoute, RoleGuard, PublicOnlyRoute, FeatureFlagGuard } from './guards';
 
 // Code-Splitting por Módulo de Negocio (React.lazy)
 const LoginPage = lazy(() => import('@/features/auth/components/LoginPage'));
@@ -18,6 +18,7 @@ const HealthDashboardPage = lazy(() => import('@/features/health/components/Heal
 const TwoFactorSetupPage = lazy(() => import('@/features/two-factor/components/TwoFactorSetupPage'));
 const FeatureFlagsPage = lazy(() => import('@/features/feature-flags/components/FeatureFlagsPage'));
 const SystemLogsPage = lazy(() => import('@/features/system-logs/components/SystemLogsPage'));
+const DiscordBotPage = lazy(() => import('@/features/discord-bot/components/DiscordBotDashboard'));
 
 export const router = createBrowserRouter([
   // Rutas Públicas de Autenticación
@@ -134,6 +135,18 @@ export const router = createBrowserRouter([
               <SystemLogsPage />
             </Suspense>
           </RoleGuard>
+        ),
+      },
+      {
+        path: 'admin/discord-bot',
+        element: (
+          <FeatureFlagGuard flagKey="DISCORD_BOT_ENABLED">
+            <RoleGuard allowedRoles={['admin', 'user']}>
+              <Suspense fallback={<BentoGridSkeleton />}>
+                <DiscordBotPage />
+              </Suspense>
+            </RoleGuard>
+          </FeatureFlagGuard>
         ),
       },
       {
