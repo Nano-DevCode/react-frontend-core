@@ -103,11 +103,21 @@ export interface PublicFeatureFlags {
 
 export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlags> => {
   try {
-    const response = await apiClient.get<PublicFeatureFlags>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.FEATURE_FLAGS.PUBLIC,
       { suppressToast: true }
     );
-    return response.data;
+    const raw =
+      response.data && typeof response.data === 'object' && 'data' in response.data
+        ? response.data.data
+        : response.data;
+
+    return {
+      oauth_social_login: Boolean(raw?.oauth_social_login),
+      oauth_google: Boolean(raw?.oauth_google),
+      oauth_facebook: Boolean(raw?.oauth_facebook),
+      discord_bot: Boolean(raw?.discord_bot),
+    };
   } catch {
     return {
       oauth_social_login: false,

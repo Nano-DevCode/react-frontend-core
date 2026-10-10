@@ -73,12 +73,8 @@ export const usePublicFeatureFlagsQuery = () => {
   return useQuery<PublicFeatureFlags>({
     queryKey: ['public-feature-flags'],
     queryFn: fetchPublicFeatureFlagsAction,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-    initialData: {
-      oauth_social_login: false,
-      oauth_google: false,
-      oauth_facebook: false,
-    },
+    staleTime: 1000 * 60, // 1 minuto
+    refetchOnMount: 'always',
   });
 };
 
