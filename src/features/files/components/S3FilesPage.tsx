@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { FileDropzone } from './FileDropzone';
 import { FileGallery } from './FileGallery';
 import { UploadResult } from '../types/files.types';
@@ -21,20 +22,11 @@ export default function S3FilesPage() {
 
   return (
     <div className="notranslate space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold tracking-tight text-foreground m-0">
-              <span>Gestor de Archivos S3 & SeaweedFS</span>
-            </h2>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            <span>Almacenamiento en caliente con escaneo antivirus ClamAV Daemon y conversión automática a WebP.</span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* Header reutilizable */}
+      <PageHeader
+        title="Gestor de Archivos S3 & SeaweedFS"
+        description="Almacenamiento en caliente con escaneo antivirus ClamAV Daemon y conversión automática a WebP."
+        actions={
           <Button
             variant="outline"
             size="sm"
@@ -44,8 +36,8 @@ export default function S3FilesPage() {
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Restablecer Demo</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Zona Dropzone */}
       <FileDropzone onUploadSuccess={handleUploadSuccess} />
