@@ -10,13 +10,26 @@ export interface UserAuthContext {
   permissions: string[];
   priority?: number;
   isTwoFactorEnabled?: boolean;
+  isProfileComplete?: boolean;
 }
 
 export interface RegisterDto {
   email: string;
   password: string;
+  firstName: string;
+  firstLastName: string;
+  secondLastName: string;
   name?: string;
 }
+
+export interface UpdateProfileDto {
+  firstName: string;
+  firstLastName: string;
+  secondLastName: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
 
 export interface RegisterResponse {
   message: string;
@@ -55,9 +68,11 @@ export interface LoginSuccessResponse {
   user: {
     id: string;
     email: string;
+    name?: string | null;
     roles: string[];
     permissions: string[];
     isTwoFactorEnabled?: boolean;
+    isProfileComplete?: boolean;
   };
 }
 
@@ -73,11 +88,14 @@ export interface RefreshTokenResponse {
   user: {
     id: string;
     email: string;
+    name?: string | null;
     roles: string[];
     permissions: string[];
     isTwoFactorEnabled?: boolean;
+    isProfileComplete?: boolean;
   };
 }
+
 
 export interface LogoutResponse {
   message: string;

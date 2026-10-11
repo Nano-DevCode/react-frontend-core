@@ -6,6 +6,7 @@ import { Footer } from './Footer';
 import { BottomNav } from './BottomNav';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { CompleteProfileModal } from '@/features/auth/components/CompleteProfileModal';
 
 export const AppLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,7 +38,11 @@ export const AppLayout = () => {
         {/* Barra de navegación inferior flotante para Móvil */}
         <BottomNav />
       </div>
+
+      {/* Modal obligatorio para completar perfil (OAuth / faltante de apellidos) */}
+      <CompleteProfileModal />
     </div>
   );
 };
+
 

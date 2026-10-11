@@ -4,12 +4,13 @@ import { toast } from 'sonner';
 import {
   loginAction,
   registerAction,
+  updateProfileAction,
   verifyEmailAction,
   resendVerificationAction,
   logoutAction,
 } from '../actions/auth.actions';
 import { useAuthStore } from '@/stores/use-auth-store';
-import type { LoginDto, RegisterDto, ResendVerificationDto } from '../types/auth.types';
+import type { LoginDto, RegisterDto, ResendVerificationDto, UpdateProfileDto } from '../types/auth.types';
 
 export const useLoginMutation = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -37,6 +38,25 @@ export const useRegisterMutation = () => {
     },
   });
 };
+
+export const useUpdateProfileMutation = () => {
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  return useMutation({
+    mutationFn: (dto: UpdateProfileDto) => updateProfileAction(dto),
+    onSuccess: (updatedUser) => {
+      updateUser(updatedUser);
+      toast.success('Perfil actualizado correctamente');
+    },
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      toast.error(
+        axiosErr?.response?.data?.message || 'Error al actualizar el perfil'
+      );
+    },
+  });
+};
+
 
 export const useVerifyEmailQuery = (token: string | null) => {
   return useQuery({

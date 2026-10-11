@@ -14,6 +14,8 @@ import type {
   LogoutResponse,
   AdminDashboardResponse,
   UsersExportResponse,
+  UpdateProfileDto,
+  UserAuthContext,
 } from '../types/auth.types';
 
 export const loginAction = async (dto: LoginDto): Promise<LoginResponse> => {
@@ -25,6 +27,17 @@ export const registerAction = async (dto: RegisterDto): Promise<RegisterResponse
   const response = await apiClient.post<RegisterResponse>(API_ENDPOINTS.AUTH.REGISTER, dto);
   return response.data;
 };
+
+export const updateProfileAction = async (
+  dto: UpdateProfileDto
+): Promise<UserAuthContext> => {
+  const response = await apiClient.patch<UserAuthContext>(
+    API_ENDPOINTS.AUTH.PROFILE,
+    dto
+  );
+  return response.data;
+};
+
 
 export const verifyEmailAction = async (token: string): Promise<VerifyEmailResponse> => {
   const response = await apiClient.get<VerifyEmailResponse>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, {

@@ -8,5 +8,7 @@ export const AUTH_ENDPOINTS = {
   ADMIN_DASHBOARD: '/auth/admin-dashboard',
   USERS_EXPORT: '/auth/users-export',
   CRITICAL_ACTION: '/auth/critical-action',
+  PROFILE: '/auth/profile',
 } as const;
+
 

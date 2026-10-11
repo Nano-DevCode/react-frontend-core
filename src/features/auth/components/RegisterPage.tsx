@@ -13,7 +13,15 @@ import { useRegisterMutation } from '../hooks/use-auth';
 import { SocialLoginButtons } from './SocialLoginButtons';
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'El nombre debe contener al menos 2 caracteres').optional().or(z.literal('')),
+  firstName: z
+    .string()
+    .min(2, 'El nombre(s) es obligatorio y debe tener al menos 2 caracteres'),
+  firstLastName: z
+    .string()
+    .min(2, 'El primer apellido es obligatorio y debe tener al menos 2 caracteres'),
+  secondLastName: z
+    .string()
+    .min(2, 'El segundo apellido es obligatorio y debe tener al menos 2 caracteres'),
   email: z.string().email('Ingresa un correo electrónico corporativo válido'),
   password: z
     .string()
@@ -38,11 +46,21 @@ export default function RegisterPage() {
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
+      firstName: '',
+      firstLastName: '',
+      secondLastName: '',
       email: '',
       password: '',
     },
   });
+
+  const firstNameValue = watch('firstName');
+  const firstLastNameValue = watch('firstLastName');
+  const secondLastNameValue = watch('secondLastName');
+  const autoFullName = [firstNameValue, firstLastNameValue, secondLastNameValue]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 
   const passwordValue = watch('password');
   const { mutate: registerUser, isPending } = useRegisterMutation();
@@ -52,7 +70,9 @@ export default function RegisterPage() {
       {
         email: values.email,
         password: values.password,
-        name: values.name || undefined,
+        firstName: values.firstName.trim(),
+        firstLastName: values.firstLastName.trim(),
+        secondLastName: values.secondLastName.trim(),
       },
       {
         onSuccess: () => {
@@ -61,6 +81,7 @@ export default function RegisterPage() {
       }
     );
   };
+
 
   return (
     <div className="notranslate flex min-h-screen w-full flex-col justify-between p-6 sm:p-12 bg-background">
@@ -104,27 +125,73 @@ export default function RegisterPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Nombre */}
+              {/* Nombre(s) */}
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-xs font-semibold">
-                  <span>Nombre Completo (Opcional)</span>
+                <Label htmlFor="firstName" className="text-xs font-semibold">
+                  <span>Nombre(s) *</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="name"
-                    placeholder="Ej. Carlos Silva"
+                    id="firstName"
+                    placeholder="Ej. Juan Carlos"
                     className="pl-9"
                     disabled={isPending}
-                    {...register('name')}
+                    {...register('firstName')}
                   />
                 </div>
-                {errors.name && (
+                {errors.firstName && (
                   <span className="text-[11px] text-destructive font-medium">
-                    <span>{errors.name.message}</span>
+                    <span>{errors.firstName.message}</span>
                   </span>
                 )}
               </div>
+
+              {/* Apellidos */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstLastName" className="text-xs font-semibold">
+                    <span>Primer Apellido *</span>
+                  </Label>
+                  <Input
+                    id="firstLastName"
+                    placeholder="Ej. Pérez"
+                    disabled={isPending}
+                    {...register('firstLastName')}
+                  />
+                  {errors.firstLastName && (
+                    <span className="text-[11px] text-destructive font-medium">
+                      <span>{errors.firstLastName.message}</span>
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="secondLastName" className="text-xs font-semibold">
+                    <span>Segundo Apellido *</span>
+                  </Label>
+                  <Input
+                    id="secondLastName"
+                    placeholder="Ej. Gómez"
+                    disabled={isPending}
+                    {...register('secondLastName')}
+                  />
+                  {errors.secondLastName && (
+                    <span className="text-[11px] text-destructive font-medium">
+                      <span>{errors.secondLastName.message}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Vista previa en tiempo real del nombre completo generado */}
+              {autoFullName && (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs flex items-center justify-between">
+                  <span className="text-muted-foreground">Nombre completo:</span>
+                  <span className="font-semibold text-primary">{autoFullName}</span>
+                </div>
+              )}
+
 
               {/* Correo Electrónico */}
               <div className="space-y-1.5">
