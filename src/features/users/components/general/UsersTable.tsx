@@ -12,6 +12,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { toast } from 'sonner';
 import { useUsersTableColumns } from './use-users-table-columns';
 import { UsersTableToolbar } from './UsersTableToolbar';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { UserLifecycleDialog } from '../crud/UserLifecycleDialog';
 import { useExportUsersMutation } from '../../hooks/use-users';
 import type { UserRecord } from '../../types/users.types';
@@ -148,11 +149,11 @@ export const UsersTable = ({ users }: UsersTableProps) => {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="h-32 text-center text-xs text-muted-foreground"
-                  >
-                    <span>No se encontraron usuarios coincidentes con los filtros.</span>
+                  <td colSpan={columns.length} className="p-8">
+                    <EmptyState
+                      title="Sin usuarios coincidentes"
+                      description="No se encontraron usuarios que coincidan con la búsqueda o filtros aplicados."
+                    />
                   </td>
                 </tr>
               ) : (

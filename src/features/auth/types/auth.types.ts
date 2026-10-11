@@ -8,6 +8,7 @@ export interface UserAuthContext {
   name?: string | null;
   roles: string[];
   permissions: string[];
+  priority?: number;
   isTwoFactorEnabled?: boolean;
 }
 

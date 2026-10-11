@@ -6,19 +6,12 @@ import {
   Copy,
   Check,
   ShieldCheck,
-  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useDeleteFileMutation } from '../hooks/use-files';
 import { getFileViewUrl } from '@/utils/file-url';
 import { toast } from 'sonner';
@@ -57,11 +50,10 @@ export const FileGallery = ({ files, onFileDeleted }: FileGalleryProps) => {
 
   if (files.length === 0) {
     return (
-      <div className="notranslate rounded-2xl border border-dashed border-border/70 p-12 text-center">
-        <p className="text-xs text-muted-foreground">
-          <span>No hay archivos cargados recientemente en el almacenamiento SeaweedFS / S3.</span>
-        </p>
-      </div>
+      <EmptyState
+        title="Sin archivos almacenados"
+        description="No hay archivos cargados recientemente en el almacenamiento SeaweedFS / S3."
+      />
     );
   }
 
@@ -172,44 +164,24 @@ export const FileGallery = ({ files, onFileDeleted }: FileGalleryProps) => {
         })}
       </div>
 
-      {/* Diálogo de Confirmación de Borrado */}
-      <Dialog open={Boolean(fileToDelete)} onOpenChange={(open) => !open && setFileToDelete(null)}>
-        <DialogContent className="notranslate max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base"><span>Confirmar Eliminación</span></DialogTitle>
-            <DialogDescription className="text-xs">
-              <span>¿Estás seguro de que deseas eliminar permanentemente</span>{' '}
-              <strong className="text-foreground">{fileToDelete?.originalName}</strong>{' '}
-              <span>del bucket SeaweedFS / S3? Esta acción no se puede deshacer.</span>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:justify-between pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFileToDelete(null)}
-              disabled={isDeleting}
-            >
-              <span>Cancelar</span>
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleConfirmDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  <span>Eliminando...</span>
-                </>
-              ) : (
-                <span>Eliminar de S3</span>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Diálogo de Confirmación de Borrado Reutilizable */}
+      <ConfirmDialog
+        open={Boolean(fileToDelete)}
+        onOpenChange={(open) => !open && setFileToDelete(null)}
+        title="Confirmar Eliminación"
+        description={
+          <>
+            ¿Estás seguro de que deseas eliminar permanentemente{' '}
+            <strong className="text-foreground">{fileToDelete?.originalName}</strong> del bucket
+            SeaweedFS / S3? Esta acción no se puede deshacer.
+          </>
+        }
+        confirmLabel="Eliminar de S3"
+        cancelLabel="Cancelar"
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

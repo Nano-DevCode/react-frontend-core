@@ -15,6 +15,8 @@ import {
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { FeatureFlagRecord } from '../types/feature-flags.types';
 
 export default function FeatureFlagsPage() {
@@ -52,33 +54,28 @@ export default function FeatureFlagsPage() {
 
   return (
     <div className="notranslate space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold tracking-tight text-foreground m-0">
-              <span>Gestión de Feature Flags en Tiempo Real</span>
-            </h2>
-            <Badge variant="admin" className="text-xs">
-              <span>Redis Cache + Fallback PostgreSQL</span>
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            <span>Habilita o deshabilita capacidades del sistema al instante sin necesidad de reiniciar el servidor backend ni desplegar código.</span>
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="h-9 gap-1.5 text-xs self-start sm:self-auto"
-        >
-          <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
-          <span>{isFetching ? 'Actualizando...' : 'Refrescar Banderas'}</span>
-        </Button>
-      </div>
+      {/* Header reutilizable */}
+      <PageHeader
+        title="Gestión de Feature Flags en Tiempo Real"
+        badge={
+          <Badge variant="admin" className="text-xs">
+            <span>Redis Cache + Fallback PostgreSQL</span>
+          </Badge>
+        }
+        description="Habilita o deshabilita capacidades del sistema al instante sin necesidad de reiniciar el servidor backend ni desplegar código."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="h-9 gap-1.5 text-xs self-start sm:self-auto"
+          >
+            <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+            <span>{isFetching ? 'Actualizando...' : 'Refrescar Banderas'}</span>
+          </Button>
+        }
+      />
 
       {/* Lista de Flags */}
       <div className="grid grid-cols-1 gap-4">
@@ -100,9 +97,10 @@ export default function FeatureFlagsPage() {
                     <span className="font-mono text-sm font-bold text-foreground">
                       <span>{flagKey}</span>
                     </span>
-                    <Badge variant={isEnabled ? 'success' : 'outline'} className="text-[10px]">
-                      <span>{isEnabled ? 'Habilitada' : 'Apagada'}</span>
-                    </Badge>
+                    <StatusBadge
+                      variant={isEnabled ? 'active' : 'inactive'}
+                      label={isEnabled ? 'Habilitada' : 'Apagada'}
+                    />
                     <Badge variant={isBeta ? 'admin' : 'secondary'} className="text-[10px]">
                       <span>{isBeta ? 'En Beta' : 'Producción'}</span>
                     </Badge>

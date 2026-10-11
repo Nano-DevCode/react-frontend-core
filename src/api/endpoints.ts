@@ -9,6 +9,7 @@ import { PDF_ENDPOINTS } from '@/features/documents/constants/pdf.endpoints';
 import { NOTIFICATIONS_ENDPOINTS } from '@/features/notifications/constants/notifications.endpoints';
 import { SYSTEM_LOGS_ENDPOINTS } from '@/features/system-logs/constants/system-logs.endpoints';
 import { DISCORD_BOT_ENDPOINTS } from '@/features/discord-bot/constants/discord-bot.endpoints';
+import { ROLES_ENDPOINTS } from '@/features/roles/constants/roles.endpoints';
 
 /**
  * Registro centralizado que compone los contratos de URL de cada módulo funcional.
@@ -18,6 +19,7 @@ export const API_ENDPOINTS = {
   AUTH: AUTH_ENDPOINTS,
   TWO_FACTOR: TWO_FACTOR_ENDPOINTS,
   USERS: USERS_ENDPOINTS,
+  ROLES: ROLES_ENDPOINTS,
   FILES: FILES_ENDPOINTS,
   HEALTH: HEALTH_ENDPOINTS.HEALTH,
   FEATURE_FLAGS: FEATURE_FLAGS_ENDPOINTS,
@@ -35,6 +37,7 @@ export {
   AUTH_ENDPOINTS,
   TWO_FACTOR_ENDPOINTS,
   USERS_ENDPOINTS,
+  ROLES_ENDPOINTS,
   FILES_ENDPOINTS,
   HEALTH_ENDPOINTS,
   FEATURE_FLAGS_ENDPOINTS,

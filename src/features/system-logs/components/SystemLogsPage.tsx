@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Info,
   RefreshCw,
-  Search,
   Eye,
   Filter,
   CheckCircle2,
@@ -19,8 +18,10 @@ import { toast } from 'sonner';
 import { reportClientLogAction } from '../actions/system-logs.actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { EmptyState } from '@/components/shared/EmptyState';
 import {
   Table,
   TableBody,
@@ -154,49 +155,41 @@ export const SystemLogsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Logs del Sistema
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Monitoreo y diagnóstico unificado en tiempo real de eventos del backend y cliente web.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateTestLog}
-            disabled={isCreatingTestLog}
-            className="h-9 gap-1.5 shadow-xs text-muted-foreground hover:text-foreground"
-          >
-            <PlusCircle
-              className={`w-3.5 h-3.5 ${isCreatingTestLog ? 'animate-spin' : ''}`}
-            />
-            <span>Log de Prueba</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLogsFetching}
-            className="h-9 gap-1.5 shadow-xs"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${isLogsFetching ? 'animate-spin' : ''}`}
-            />
-            <span>Actualizar</span>
-          </Button>
-        </div>
-      </div>
+      {/* Header reutilizable */}
+      <PageHeader
+        title="Logs del Sistema"
+        icon={Terminal}
+        description="Monitoreo y diagnóstico unificado en tiempo real de eventos del backend y cliente web."
+        className="border-b border-border/60 pb-5"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCreateTestLog}
+              disabled={isCreatingTestLog}
+              className="h-9 gap-1.5 shadow-xs text-muted-foreground hover:text-foreground"
+            >
+              <PlusCircle
+                className={`w-3.5 h-3.5 ${isCreatingTestLog ? 'animate-spin' : ''}`}
+              />
+              <span>Log de Prueba</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLogsFetching}
+              className="h-9 gap-1.5 shadow-xs"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isLogsFetching ? 'animate-spin' : ''}`}
+              />
+              <span>Actualizar</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -303,17 +296,12 @@ export const SystemLogsPage = () => {
       {/* Filter Toolbar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3.5 rounded-2xl bg-card border border-border/80 shadow-xs">
         <div className="flex flex-1 items-center gap-2 min-w-0">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar en mensaje o contexto..."
-              value={filters.search || ''}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, search: e.target.value, page: 1 }))
-              }
-              className="pl-9 h-9 text-xs rounded-xl bg-background"
-            />
-          </div>
+          <SearchInput
+            placeholder="Buscar en mensaje o contexto..."
+            value={filters.search || ''}
+            onChange={(val) => setFilters((prev) => ({ ...prev, search: val, page: 1 }))}
+            className="flex-1 min-w-[200px]"
+          />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -405,16 +393,12 @@ export const SystemLogsPage = () => {
               ))
             ) : !logsData?.data || logsData.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-48 text-center">
-                  <div className="flex flex-col items-center justify-center text-muted-foreground">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2 opacity-80" />
-                    <p className="text-sm font-medium text-foreground">
-                      No se encontraron registros de logs
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      El sistema está operando con normalidad o los filtros aplicados no arrojaron resultados.
-                    </p>
-                  </div>
+                <TableCell colSpan={6} className="p-8">
+                  <EmptyState
+                    icon={CheckCircle2}
+                    title="No se encontraron registros de logs"
+                    description="El sistema está operando con normalidad o los filtros aplicados no arrojaron resultados."
+                  />
                 </TableCell>
               </TableRow>
             ) : (

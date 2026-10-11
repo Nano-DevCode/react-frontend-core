@@ -16,6 +16,7 @@ import { twoFactorRoutes } from '@/features/two-factor/routes';
 import { featureFlagsRoutes } from '@/features/feature-flags/routes';
 import { systemLogsRoutes } from '@/features/system-logs/routes';
 import { discordBotRoutes } from '@/features/discord-bot/routes';
+import { rolesRoutes } from '@/features/roles/routes';
 
 export const router = createBrowserRouter([
   // 1. Rutas Públicas de Autenticación
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
     children: [
       ...dashboardRoutes,
       ...usersRoutes,
+      ...rolesRoutes,
       ...filesRoutes,
       ...auditRoutes,
       ...healthRoutes,

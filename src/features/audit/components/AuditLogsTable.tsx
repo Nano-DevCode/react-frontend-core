@@ -1,6 +1,7 @@
 import { FileDiff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { AuditLogRecord } from '../types/audit.types';
 
 interface AuditLogsTableProps {
@@ -39,8 +40,11 @@ export const AuditLogsTable = ({ logs, onSelectLog }: AuditLogsTableProps) => {
           <tbody className="divide-y divide-border/40">
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                  <span>No se encontraron eventos de auditoría coincidentes.</span>
+                <td colSpan={6} className="p-6">
+                  <EmptyState
+                    title="Sin eventos de auditoría"
+                    description="No se encontraron registros de auditoría que coincidan con la búsqueda o filtro aplicado."
+                  />
                 </td>
               </tr>
             ) : (

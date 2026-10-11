@@ -2,6 +2,7 @@ import {
   Users,
   HardDrive,
   Activity,
+  Shield,
   ShieldAlert,
   Flag,
   LayoutDashboard,
@@ -28,11 +29,18 @@ export const navigationItems: NavigationItem[] = [
     roles: ['admin', 'user', 'auditor'],
   },
   {
-    title: 'Usuarios & RBAC',
+    title: 'Usuarios',
     path: '/usuarios',
     icon: Users,
     roles: ['admin'],
     badge: 'Admin',
+  },
+  {
+    title: 'Roles & Permisos',
+    path: '/roles',
+    icon: Shield,
+    roles: ['admin'],
+    badge: 'RBAC',
   },
   {
     title: 'Archivos S3',

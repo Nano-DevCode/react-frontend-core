@@ -1,5 +1,4 @@
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/shared/SearchInput';
 
 export type AuditActionFilter = 'ALL' | 'LOGIN' | 'UPDATE_USER' | 'UPLOAD_FILE' | 'DELETE_FILE';
 
@@ -20,15 +19,12 @@ export const AuditLogsToolbar = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 notranslate">
-      <div className="relative flex-1 sm:max-w-xs">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por IP, usuario, endpoint..."
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 h-9 text-xs focus-visible:ring-2 focus-visible:ring-primary/30"
-        />
-      </div>
+      <SearchInput
+        placeholder="Buscar por IP, usuario, endpoint..."
+        value={search}
+        onChange={onSearchChange}
+        className="flex-1 sm:max-w-xs"
+      />
 
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center rounded-lg border border-border/70 p-0.5 bg-muted/40 overflow-x-auto">
