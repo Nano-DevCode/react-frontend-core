@@ -21,6 +21,8 @@ export interface RoleRecord {
 
 export interface UserProfileRecord {
   firstName?: string | null;
+  firstLastName?: string | null;
+  secondLastName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
@@ -62,8 +64,10 @@ export interface CreateUserDto {
   name?: string;
   roles?: string[];
   isActive?: boolean;
-  profile?: {
-    firstName?: string;
+  profile: {
+    firstName: string;
+    firstLastName: string;
+    secondLastName: string;
     lastName?: string;
     bio?: string;
     avatarUrl?: string;
@@ -78,6 +82,8 @@ export interface UpdateUserDto {
   isActive?: boolean;
   profile?: {
     firstName?: string;
+    firstLastName?: string;
+    secondLastName?: string;
     lastName?: string;
     bio?: string;
     avatarUrl?: string;

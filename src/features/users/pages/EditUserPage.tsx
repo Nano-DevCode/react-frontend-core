@@ -30,27 +30,34 @@ export default function EditUserPage() {
   const { data: user, isLoading, isError } = useUserDetailQuery(id ?? null);
   const { mutate: updateUser, isPending } = useUpdateUserMutation();
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstLastName, setFirstLastName] = useState('');
+  const [secondLastName, setSecondLastName] = useState('');
   const [bio, setBio] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
-      setName(user.name || '');
       setEmail(user.email || '');
       setPassword('');
       setFirstName(user.profile?.firstName || '');
-      setLastName(user.profile?.lastName || '');
+
+      const lastParts = (user.profile?.lastName || '').trim().split(/\s+/);
+      setFirstLastName(user.profile?.firstLastName || lastParts[0] || '');
+      setSecondLastName(user.profile?.secondLastName || lastParts.slice(1).join(' ') || '');
+
       setBio(user.profile?.bio || '');
       setIsActive(user.isActive ?? true);
       setSelectedRoles(user.roles?.map((r) => r.role.name) || ['user']);
     }
   }, [user]);
+
+  const fullName = [firstName.trim(), firstLastName.trim(), secondLastName.trim()]
+    .filter(Boolean)
+    .join(' ');
 
   if (isLoading) {
     return (
@@ -92,14 +99,15 @@ export default function EditUserPage() {
       {
         id,
         dto: {
-          name: name.trim() || undefined,
+          name: fullName || undefined,
           email: email.trim(),
           password: password.trim() ? password.trim() : undefined,
           roles: selectedRoles,
           isActive,
           profile: {
             firstName: firstName.trim() || undefined,
-            lastName: lastName.trim() || undefined,
+            firstLastName: firstLastName.trim() || undefined,
+            secondLastName: secondLastName.trim() || undefined,
             bio: bio.trim() || undefined,
           },
         },
@@ -141,46 +149,31 @@ export default function EditUserPage() {
 
       {/* Formulario */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Datos Principales */}
+        {/* Cuenta y Acceso */}
         <Card className="border-border/80 shadow-xs">
           <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Mail className="h-4 w-4 text-primary" />
-              <span>Identidad y Acceso</span>
+              <span>Cuenta y Acceso</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              <span>Nombre y correo principal con el que se identifica el usuario.</span>
+              <span>Correo electrónico principal, contraseña y estado de la cuenta.</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-xs font-semibold">
-                  <span>Nombre Completo / Visible</span>
-                </Label>
-                <Input
-                  id="edit-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ej. Juan Pérez"
-                  className="h-9 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-email" className="text-xs font-semibold">
-                  <span>Correo Electrónico *</span>
-                </Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="correo@sistema.com"
-                  className="h-9 text-xs font-mono"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-email" className="text-xs font-semibold">
+                <span>Correo Electrónico *</span>
+              </Label>
+              <Input
+                id="edit-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="correo@sistema.com"
+                className="h-9 text-xs font-mono"
+              />
             </div>
 
             <div className="space-y-1.5 pt-1 border-t border-border/40">
@@ -216,44 +209,72 @@ export default function EditUserPage() {
           </CardContent>
         </Card>
 
-        {/* Perfil Extendido */}
+        {/* Perfil Extendido: Nombre(s) y Apellidos */}
         <Card className="border-border/80 shadow-xs">
           <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <User className="h-4 w-4 text-primary" />
-              <span>Datos del Perfil</span>
+              <span>Información Personal y Perfil</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              <span>Primer nombre, apellidos y descripción biográfica.</span>
+              <span>Nombre(s) y apellidos del usuario. El nombre completo se actualiza automáticamente.</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-first-name" className="text-xs font-semibold">
-                  <span>Primer Nombre</span>
+                  <span>Nombre(s)</span>
                 </Label>
                 <Input
                   id="edit-first-name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Juan"
+                  placeholder="Ej. Juan Carlos"
                   className="h-9 text-xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="edit-last-name" className="text-xs font-semibold">
-                  <span>Apellidos</span>
+                <Label htmlFor="edit-first-last-name" className="text-xs font-semibold">
+                  <span>Primer Apellido</span>
                 </Label>
                 <Input
-                  id="edit-last-name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Pérez"
+                  id="edit-first-last-name"
+                  value={firstLastName}
+                  onChange={(e) => setFirstLastName(e.target.value)}
+                  placeholder="Ej. Pérez"
                   className="h-9 text-xs"
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-second-last-name" className="text-xs font-semibold">
+                  <span>Segundo Apellido</span>
+                </Label>
+                <Input
+                  id="edit-second-last-name"
+                  value={secondLastName}
+                  onChange={(e) => setSecondLastName(e.target.value)}
+                  placeholder="Ej. Gómez"
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Vista previa del Nombre Completo */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                  Nombre Completo en el Sistema
+                </span>
+                <p className="text-xs font-bold text-foreground">
+                  <span>{fullName || user.name || 'Sin nombre asignado'}</span>
+                </p>
+              </div>
+              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary shrink-0">
+                <span>Auto-generado</span>
+              </Badge>
             </div>
 
             <div className="space-y-1.5">

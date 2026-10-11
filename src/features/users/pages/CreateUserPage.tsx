@@ -27,14 +27,18 @@ export default function CreateUserPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstLastName, setFirstLastName] = useState('');
+  const [secondLastName, setSecondLastName] = useState('');
   const [bio, setBio] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(['user']);
 
   const { mutate: createUser, isPending } = useCreateUserMutation();
+
+  const fullName = [firstName.trim(), firstLastName.trim(), secondLastName.trim()]
+    .filter(Boolean)
+    .join(' ');
 
   const toggleRole = (roleName: string) => {
     setSelectedRoles((prev) =>
@@ -47,17 +51,19 @@ export default function CreateUserPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    if (!firstName.trim() || !firstLastName.trim() || !secondLastName.trim()) return;
 
     createUser(
       {
         email: email.trim(),
         password: password.trim(),
-        name: name.trim() || undefined,
+        name: fullName,
         isActive,
         roles: selectedRoles.length > 0 ? selectedRoles : ['user'],
         profile: {
-          firstName: firstName.trim() || undefined,
-          lastName: lastName.trim() || undefined,
+          firstName: firstName.trim(),
+          firstLastName: firstLastName.trim(),
+          secondLastName: secondLastName.trim(),
           bio: bio.trim() || undefined,
         },
       },
@@ -91,7 +97,7 @@ export default function CreateUserPage() {
             <span>Crear Nuevo Usuario</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            <span>Registra una nueva cuenta en la plataforma asignando credenciales, roles y perfil.</span>
+            <span>Registra una nueva cuenta en la plataforma asignando credenciales, roles y datos personales.</span>
           </p>
         </div>
       </div>
@@ -163,39 +169,27 @@ export default function CreateUserPage() {
           </CardContent>
         </Card>
 
-        {/* Perfil del Usuario */}
+        {/* Perfil del Usuario: Nombre(s) y Apellidos obligatorios */}
         <Card className="border-border/80 shadow-xs">
           <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <User className="h-4 w-4 text-primary" />
-              <span>Información Personal y Perfil (Opcional)</span>
+              <span>Información Personal y Perfil</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              <span>Nombre para mostrar y datos biográficos del perfil.</span>
+              <span>Ingresa el nombre(s) y ambos apellidos. El nombre completo se generará automáticamente a partir de estos campos.</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="create-name" className="text-xs font-semibold">
-                <span>Nombre Completo / Nombre Visible</span>
-              </Label>
-              <Input
-                id="create-name"
-                placeholder="Ej. Juan Pérez"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="create-first-name" className="text-xs font-semibold">
-                  <span>Primer Nombre</span>
+                  <span>Nombre(s) *</span>
                 </Label>
                 <Input
                   id="create-first-name"
-                  placeholder="Juan"
+                  required
+                  placeholder="Ej. Juan Carlos"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="h-9 text-xs"
@@ -203,22 +197,60 @@ export default function CreateUserPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="create-last-name" className="text-xs font-semibold">
-                  <span>Apellidos</span>
+                <Label htmlFor="create-first-last-name" className="text-xs font-semibold">
+                  <span>Primer Apellido *</span>
                 </Label>
                 <Input
-                  id="create-last-name"
-                  placeholder="Pérez"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  id="create-first-last-name"
+                  required
+                  placeholder="Ej. Pérez"
+                  value={firstLastName}
+                  onChange={(e) => setFirstLastName(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="create-second-last-name" className="text-xs font-semibold">
+                  <span>Segundo Apellido *</span>
+                </Label>
+                <Input
+                  id="create-second-last-name"
+                  required
+                  placeholder="Ej. Gómez"
+                  value={secondLastName}
+                  onChange={(e) => setSecondLastName(e.target.value)}
                   className="h-9 text-xs"
                 />
               </div>
             </div>
 
+            {/* Vista previa del Nombre Completo generado */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                  Nombre Completo Generado en el Sistema
+                </span>
+                <p className="text-xs font-bold text-foreground">
+                  {fullName ? (
+                    <span>{fullName}</span>
+                  ) : (
+                    <span className="text-muted-foreground italic font-normal">
+                      Completa los 3 campos de nombres y apellidos arriba...
+                    </span>
+                  )}
+                </p>
+              </div>
+              {fullName && (
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary shrink-0">
+                  <span>Auto-generado</span>
+                </Badge>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="create-bio" className="text-xs font-semibold">
-                <span>Biografía o Nota del Perfil</span>
+                <span>Biografía o Nota del Perfil (Opcional)</span>
               </Label>
               <Input
                 id="create-bio"
@@ -280,7 +312,14 @@ export default function CreateUserPage() {
           <Button
             type="submit"
             size="sm"
-            disabled={isPending || !email.trim() || !password.trim()}
+            disabled={
+              isPending ||
+              !email.trim() ||
+              !password.trim() ||
+              !firstName.trim() ||
+              !firstLastName.trim() ||
+              !secondLastName.trim()
+            }
             className="h-9 gap-1.5 text-xs font-semibold px-5"
           >
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}

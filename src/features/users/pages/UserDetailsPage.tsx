@@ -205,10 +205,10 @@ export default function UserDetailsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 text-xs">
-            <div className="grid grid-cols-2 gap-3 bg-muted/20 p-3 rounded-xl border border-border/50">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-muted/20 p-3 rounded-xl border border-border/50">
               <div className="space-y-0.5">
                 <span className="text-[11px] font-medium text-muted-foreground">
-                  <span>Primer Nombre</span>
+                  <span>Nombre(s)</span>
                 </span>
                 <span className="text-foreground font-semibold block">
                   <span>{user.profile?.firstName || 'No especificado'}</span>
@@ -217,10 +217,19 @@ export default function UserDetailsPage() {
 
               <div className="space-y-0.5">
                 <span className="text-[11px] font-medium text-muted-foreground">
-                  <span>Apellidos</span>
+                  <span>Primer Apellido</span>
                 </span>
                 <span className="text-foreground font-semibold block">
-                  <span>{user.profile?.lastName || 'No especificado'}</span>
+                  <span>{user.profile?.firstLastName || 'No especificado'}</span>
+                </span>
+              </div>
+
+              <div className="space-y-0.5">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  <span>Segundo Apellido</span>
+                </span>
+                <span className="text-foreground font-semibold block">
+                  <span>{user.profile?.secondLastName || 'No especificado'}</span>
                 </span>
               </div>
             </div>

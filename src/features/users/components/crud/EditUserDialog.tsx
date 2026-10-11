@@ -36,11 +36,11 @@ export const EditUserDialog = ({
   const { data: detailData } = useUserDetailQuery(open && user ? user.id : null);
   const activeUser = detailData || user;
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstLastName, setFirstLastName] = useState('');
+  const [secondLastName, setSecondLastName] = useState('');
   const [bio, setBio] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -49,16 +49,23 @@ export const EditUserDialog = ({
 
   useEffect(() => {
     if (activeUser) {
-      setName(activeUser.name || '');
       setEmail(activeUser.email || '');
       setPassword('');
       setFirstName(activeUser.profile?.firstName || '');
-      setLastName(activeUser.profile?.lastName || '');
+
+      const lastParts = (activeUser.profile?.lastName || '').trim().split(/\s+/);
+      setFirstLastName(activeUser.profile?.firstLastName || lastParts[0] || '');
+      setSecondLastName(activeUser.profile?.secondLastName || lastParts.slice(1).join(' ') || '');
+
       setBio(activeUser.profile?.bio || '');
       setIsActive(activeUser.isActive ?? true);
       setSelectedRoles(activeUser.roles?.map((r) => r.role.name) || ['user']);
     }
   }, [activeUser]);
+
+  const fullName = [firstName.trim(), firstLastName.trim(), secondLastName.trim()]
+    .filter(Boolean)
+    .join(' ');
 
   if (!user) return null;
 
@@ -78,14 +85,15 @@ export const EditUserDialog = ({
       {
         id: user.id,
         dto: {
-          name: name.trim() || undefined,
+          name: fullName || undefined,
           email: email.trim(),
           password: password.trim() ? password.trim() : undefined,
           roles: selectedRoles,
           isActive,
           profile: {
             firstName: firstName.trim() || undefined,
-            lastName: lastName.trim() || undefined,
+            firstLastName: firstLastName.trim() || undefined,
+            secondLastName: secondLastName.trim() || undefined,
             bio: bio.trim() || undefined,
           },
         },
@@ -112,70 +120,89 @@ export const EditUserDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-1 text-xs">
-          {/* Datos Básicos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="edit-name" className="text-xs flex items-center gap-1">
-                <User className="h-3 w-3 text-muted-foreground" />
-                <span>Nombre Completo</span>
-              </Label>
-              <Input
-                id="edit-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Juan Pérez"
-                className="h-8 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="edit-email" className="text-xs flex items-center gap-1">
-                <Mail className="h-3 w-3 text-muted-foreground" />
-                <span>Correo Electrónico</span>
-              </Label>
-              <Input
-                id="edit-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="correo@ejemplo.com"
-                className="h-8 text-xs font-mono"
-              />
-            </div>
+          {/* Cuenta y Correo */}
+          <div className="space-y-1">
+            <Label htmlFor="edit-email" className="text-xs flex items-center gap-1 font-semibold">
+              <Mail className="h-3 w-3 text-muted-foreground" />
+              <span>Correo Electrónico *</span>
+            </Label>
+            <Input
+              id="edit-email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com"
+              className="h-8 text-xs font-mono"
+            />
           </div>
 
-          {/* Perfil */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/20 p-2.5 rounded-lg border border-border/50">
-            <div className="space-y-1">
-              <Label htmlFor="edit-first-name" className="text-xs">
-                <span>Primer Nombre (Perfil)</span>
-              </Label>
-              <Input
-                id="edit-first-name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Nombre"
-                className="h-8 text-xs bg-background"
-              />
+          {/* Información Personal y Perfil */}
+          <div className="space-y-3 bg-muted/20 p-3 rounded-xl border border-border/50">
+            <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-primary" />
+              <span>Información Personal</span>
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="space-y-1">
+                <Label htmlFor="edit-first-name" className="text-[11px]">
+                  <span>Nombre(s)</span>
+                </Label>
+                <Input
+                  id="edit-first-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Ej. Juan Carlos"
+                  className="h-8 text-xs bg-background"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="edit-first-last-name" className="text-[11px]">
+                  <span>Primer Apellido</span>
+                </Label>
+                <Input
+                  id="edit-first-last-name"
+                  value={firstLastName}
+                  onChange={(e) => setFirstLastName(e.target.value)}
+                  placeholder="Ej. Pérez"
+                  className="h-8 text-xs bg-background"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="edit-second-last-name" className="text-[11px]">
+                  <span>Segundo Apellido</span>
+                </Label>
+                <Input
+                  id="edit-second-last-name"
+                  value={secondLastName}
+                  onChange={(e) => setSecondLastName(e.target.value)}
+                  placeholder="Ej. Gómez"
+                  className="h-8 text-xs bg-background"
+                />
+              </div>
+            </div>
+
+            {/* Vista previa del Nombre Completo en el Sistema */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-2.5 flex items-center justify-between gap-2">
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-semibold text-primary uppercase tracking-wider">
+                  Nombre Completo en el Sistema
+                </span>
+                <p className="text-xs font-bold text-foreground">
+                  <span>{fullName || activeUser?.name || 'Sin nombre asignado'}</span>
+                </p>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary shrink-0">
+                <span>Auto-generado</span>
+              </Badge>
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="edit-last-name" className="text-xs">
-                <span>Apellido (Perfil)</span>
-              </Label>
-              <Input
-                id="edit-last-name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Apellido"
-                className="h-8 text-xs bg-background"
-              />
-            </div>
-
-            <div className="sm:col-span-2 space-y-1">
-              <Label htmlFor="edit-bio" className="text-xs">
-                <span>Biografía</span>
+              <Label htmlFor="edit-bio" className="text-[11px]">
+                <span>Biografía o Cargo</span>
               </Label>
               <Input
                 id="edit-bio"

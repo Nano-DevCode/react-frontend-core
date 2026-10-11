@@ -142,18 +142,25 @@ export const UserDetailsDialog = ({
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 sm:col-span-2">
                 <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5 text-primary" />
-                  <span>Nombre en Perfil</span>
+                  <span>Desglose de Nombre y Apellidos</span>
                 </span>
-                <span className="text-foreground font-medium block">
-                  <span>
-                    {activeUser.profile?.firstName || activeUser.profile?.lastName
-                      ? `${activeUser.profile?.firstName || ''} ${activeUser.profile?.lastName || ''}`.trim()
-                      : 'No especificado'}
-                  </span>
-                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+                  <div className="rounded-md bg-muted/40 p-2 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block">Nombre(s)</span>
+                    <span className="font-semibold text-foreground text-xs">{activeUser.profile?.firstName || '—'}</span>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block">Primer Apellido</span>
+                    <span className="font-semibold text-foreground text-xs">{activeUser.profile?.firstLastName || '—'}</span>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block">Segundo Apellido</span>
+                    <span className="font-semibold text-foreground text-xs">{activeUser.profile?.secondLastName || '—'}</span>
+                  </div>
+                </div>
               </div>
 
               {activeUser.profile?.bio && (
