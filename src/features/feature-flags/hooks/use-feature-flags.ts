@@ -8,14 +8,15 @@ import {
   DEFAULT_FEATURE_FLAGS,
   type PublicFeatureFlags,
 } from '../actions/feature-flags.actions';
-import type { FeatureFlagRecord } from '@/types/feature-flags.types';
+import type { FeatureFlagRecord } from '../types/feature-flags.types';
 
 export const useFeatureFlagsQuery = () => {
   return useQuery({
     queryKey: ['feature-flags'],
     queryFn: fetchFeatureFlagsAction,
-    initialData: DEFAULT_FEATURE_FLAGS,
-    staleTime: 1000 * 60, // 1 min
+    placeholderData: DEFAULT_FEATURE_FLAGS,
+    staleTime: 1000 * 15, // 15 segundos para mantener sincronización con backend
+    refetchOnMount: true,
   });
 };
 
@@ -58,6 +59,20 @@ export const useFeatureFlag = (key: string): boolean => {
   const { data: flags } = useFeatureFlagsQuery();
   const flag = flags?.find((f) => f.key === key);
   return flag ? flag.isEnabled : false;
+};
+
+/**
+ * Hook para evaluar estado de carga y habilitación de bandera
+ */
+export const useFeatureFlagStatus = (
+  key: string
+): { isEnabled: boolean; isLoading: boolean } => {
+  const { data: flags, isLoading } = useFeatureFlagsQuery();
+  const flag = flags?.find((f) => f.key === key);
+  return {
+    isEnabled: flag ? flag.isEnabled : false,
+    isLoading,
+  };
 };
 
 export const useBetaFeatureQuery = (enabled = false) => {

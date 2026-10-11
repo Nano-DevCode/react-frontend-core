@@ -8,9 +8,9 @@ import {
   NOTIFICATIONS_QUERY_KEY,
   UNREAD_COUNT_QUERY_KEY,
 } from './use-notifications';
-import type { AppNotification, NotificationData } from '@/types/notification.types';
-import type { FeatureFlagRecord } from '@/types/feature-flags.types';
+import type { AppNotification, NotificationData } from '../types/notification.types';
 import type { PublicFeatureFlags } from '@/features/feature-flags/actions/feature-flags.actions';
+import { FeatureFlagRecord } from '@/features/feature-flags/types/feature-flags.types';
 
 /**
  * Resuelve dinámicamente el endpoint del WebSocket apuntando explícitamente

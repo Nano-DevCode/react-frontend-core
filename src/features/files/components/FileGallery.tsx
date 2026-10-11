@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/dialog';
 import { useDeleteFileMutation } from '../hooks/use-files';
 import { getFileViewUrl } from '@/utils/file-url';
-import type { UploadResult } from '@/types/files.types';
 import { toast } from 'sonner';
+import { UploadResult } from '../types/files.types';
 
 interface FileGalleryProps {
   files: UploadResult[];

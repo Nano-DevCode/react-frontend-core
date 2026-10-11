@@ -1,5 +1,5 @@
 import { Switch } from '@/components/ui/switch';
-import { useToggleUserStatusMutation } from '../hooks/use-users';
+import { useToggleUserStatusMutation } from '../../hooks/use-users';
 
 interface UserStatusSwitchProps {
   userId: string;

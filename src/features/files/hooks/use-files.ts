@@ -6,7 +6,7 @@ import {
   fetchPrivateFileUrlAction,
   deleteFileAction,
 } from '../actions/files.actions';
-import type { UploadFileParams } from '@/types/files.types';
+import { UploadFileParams } from '../types/files.types';
 
 export const useFileUploadMutation = () => {
   const queryClient = useQueryClient();

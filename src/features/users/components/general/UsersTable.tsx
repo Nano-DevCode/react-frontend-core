@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,34 +12,38 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { toast } from 'sonner';
 import { useUsersTableColumns } from './use-users-table-columns';
 import { UsersTableToolbar } from './UsersTableToolbar';
-import { UserRoleDialog } from './UserRoleDialog';
-import { useExportUsersMutation } from '../hooks/use-users';
-import type { UserRecord } from '@/types/users.types';
+import { UserLifecycleDialog } from '../crud/UserLifecycleDialog';
+import { useExportUsersMutation } from '../../hooks/use-users';
+import type { UserRecord } from '../../types/users.types';
 
 interface UsersTableProps {
   users: UserRecord[];
 }
 
 export const UsersTable = ({ users }: UsersTableProps) => {
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+  const [lifecycleUser, setLifecycleUser] = useState<UserRecord | null>(null);
 
   const { mutate: exportUsers, isPending: isExporting } = useExportUsersMutation();
 
-  // Filtrado compuesto
+  // Filtrado compuesto defensivo
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
+    const safeUsers = Array.isArray(users) ? users : [];
+
+    return safeUsers.filter((u) => {
       const matchRole =
         roleFilter === 'ALL' ||
         u.roles?.some((r) => r.role.name.toLowerCase() === roleFilter.toLowerCase());
 
       const matchStatus =
         statusFilter === 'ALL' ||
-        (statusFilter === 'ACTIVE' && u.isActive) ||
-        (statusFilter === 'SUSPENDED' && !u.isActive);
+        (statusFilter === 'ACTIVE' && u.isActive && !u.deletedAt) ||
+        (statusFilter === 'SUSPENDED' && !u.isActive && !u.deletedAt) ||
+        (statusFilter === 'DELETED' && Boolean(u.deletedAt));
 
       const matchSearch =
         !globalFilter ||
@@ -50,7 +55,9 @@ export const UsersTable = ({ users }: UsersTableProps) => {
   }, [users, roleFilter, statusFilter, globalFilter]);
 
   const columns = useUsersTableColumns({
-    onEditUser: setEditingUser,
+    onViewDetails: (user) => navigate(`/usuarios/${user.id}`),
+    onEditUser: (user) => navigate(`/usuarios/${user.id}/editar`),
+    onToggleLifecycle: setLifecycleUser,
   });
 
   const table = useReactTable({
@@ -207,12 +214,13 @@ export const UsersTable = ({ users }: UsersTableProps) => {
         </span>
       </div>
 
-      {/* Diálogo Modal de Edición de Roles */}
-      <UserRoleDialog
-        user={editingUser}
-        open={Boolean(editingUser)}
-        onOpenChange={(open) => !open && setEditingUser(null)}
+      {/* Modal de Confirmación de Baja / Alta */}
+      <UserLifecycleDialog
+        user={lifecycleUser}
+        open={Boolean(lifecycleUser)}
+        onOpenChange={(open) => !open && setLifecycleUser(null)}
       />
     </div>
   );
 };
+

@@ -159,3 +159,28 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(150, 150, 160, 0.45);
 }
+
+/* ========================================================================== */
+/* Sonner Toast Ergonomic Adjustments                                         */
+/* ========================================================================== */
+[data-sonner-toast] {
+  --toast-close-button-start: unset !important;
+  --toast-close-button-end: 10px !important;
+  --toast-close-button-transform: none !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  top: 10px !important;
+  right: 10px !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  width: auto !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+

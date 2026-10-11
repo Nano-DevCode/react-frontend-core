@@ -1,74 +1,46 @@
+import { AUTH_ENDPOINTS } from '@/features/auth/constants/auth.endpoints';
+import { TWO_FACTOR_ENDPOINTS } from '@/features/two-factor/constants/two-factor.endpoints';
+import { USERS_ENDPOINTS } from '@/features/users/constants/users.endpoints';
+import { FILES_ENDPOINTS } from '@/features/files/constants/files.endpoints';
+import { HEALTH_ENDPOINTS } from '@/features/health/constants/health.endpoints';
+import { FEATURE_FLAGS_ENDPOINTS } from '@/features/feature-flags/constants/feature-flags.endpoints';
+import { AUDIT_ENDPOINTS } from '@/features/audit/constants/audit.endpoints';
+import { PDF_ENDPOINTS } from '@/features/documents/constants/pdf.endpoints';
+import { NOTIFICATIONS_ENDPOINTS } from '@/features/notifications/constants/notifications.endpoints';
+import { SYSTEM_LOGS_ENDPOINTS } from '@/features/system-logs/constants/system-logs.endpoints';
+import { DISCORD_BOT_ENDPOINTS } from '@/features/discord-bot/constants/discord-bot.endpoints';
+
+/**
+ * Registro centralizado que compone los contratos de URL de cada módulo funcional.
+ * Cada dominio posee su propio sub-registro en su directorio de feature.
+ */
 export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    VERIFY_EMAIL: '/auth/verify-email',
-    RESEND_VERIFICATION: '/auth/resend-verification',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    ADMIN_DASHBOARD: '/auth/admin-dashboard',
-    USERS_EXPORT: '/auth/users-export',
-    CRITICAL_ACTION: '/auth/critical-action',
-  },
-  TWO_FACTOR: {
-    GENERATE: '/auth/2fa/generate',
-    TURN_ON: '/auth/2fa/turn-on',
-    TURN_OFF: '/auth/2fa/turn-off',
-    AUTHENTICATE: '/auth/2fa/authenticate',
-    STATUS: '/auth/2fa/status',
-  },
-  USERS: {
-    BASE: '/users',
-    BY_ID: (id: string) => `/users/${id}`,
-    STATUS: (id: string) => `/users/${id}/status`,
-    ROLES: (id: string) => `/users/${id}/roles`,
-  },
-  FILES: {
-    UPLOAD: '/files/upload',
-    UPLOAD_MULTIPLE: '/files/upload-multiple',
-    PUBLIC: (key: string) => `/files/public/${encodeURIComponent(key)}`,
-    VIEW: (key: string) => `/files/view/${encodeURIComponent(key)}`,
-    URL: (key: string) => `/files/${encodeURIComponent(key)}/url`,
-    DELETE: (key: string) => `/files/${encodeURIComponent(key)}`,
-  },
-  HEALTH: '/health',
-  FEATURE_FLAGS: {
-    BASE: '/feature-flags',
-    PUBLIC: '/feature-flags/public',
-    BY_KEY: (key: string) => `/feature-flags/${key}`,
-    BETA_FEATURE: '/beta-feature',
-  },
-  AUDIT: {
-    BASE: '/audit',
-  },
-  PDF: {
-    GENERATE: '/pdf/generate',
-    PREVIEW_SYNC: '/pdf/preview-sync',
-  },
-  NOTIFICATIONS: {
-    BASE: '/notifications',
-    UNREAD_COUNT: '/notifications/unread-count',
-    BY_ID: (id: string) => `/notifications/${encodeURIComponent(id)}`,
-    MARK_AS_READ: (id: string) => `/notifications/${encodeURIComponent(id)}/read`,
-    MARK_ALL_READ: '/notifications/read-all',
-  },
-  LOGS: {
-    BASE: '/logs',
-    CLIENT: '/logs/client',
-    STATS: '/logs/stats',
-  },
+  AUTH: AUTH_ENDPOINTS,
+  TWO_FACTOR: TWO_FACTOR_ENDPOINTS,
+  USERS: USERS_ENDPOINTS,
+  FILES: FILES_ENDPOINTS,
+  HEALTH: HEALTH_ENDPOINTS.HEALTH,
+  FEATURE_FLAGS: FEATURE_FLAGS_ENDPOINTS,
+  AUDIT: AUDIT_ENDPOINTS,
+  PDF: PDF_ENDPOINTS,
+  NOTIFICATIONS: NOTIFICATIONS_ENDPOINTS,
+  LOGS: SYSTEM_LOGS_ENDPOINTS,
   SYSTEM: {
-    TELEMETRY: '/system/telemetry',
+    TELEMETRY: HEALTH_ENDPOINTS.TELEMETRY,
   },
-  DISCORD_BOT: {
-    STATUS: '/discord/status',
-    GUILDS: '/discord/guilds',
-    QUEUE: (guildId: string) => `/discord/queue/${guildId}`,
-    PLAYBACK: (guildId: string) => `/discord/playback/${guildId}`,
-    REMOVE_TRACK: (guildId: string, index: number) => `/discord/queue/${guildId}/tracks/${index}`,
-    CLEAR_QUEUE: (guildId: string) => `/discord/queue/${guildId}`,
-    SEND_MESSAGE: '/discord/messages/send',
-    UPDATE_CONFIG: (guildId: string) => `/discord/guilds/${guildId}/config`,
-  },
+  DISCORD_BOT: DISCORD_BOT_ENDPOINTS,
 } as const;
 
+export {
+  AUTH_ENDPOINTS,
+  TWO_FACTOR_ENDPOINTS,
+  USERS_ENDPOINTS,
+  FILES_ENDPOINTS,
+  HEALTH_ENDPOINTS,
+  FEATURE_FLAGS_ENDPOINTS,
+  AUDIT_ENDPOINTS,
+  PDF_ENDPOINTS,
+  NOTIFICATIONS_ENDPOINTS,
+  SYSTEM_LOGS_ENDPOINTS,
+  DISCORD_BOT_ENDPOINTS,
+};

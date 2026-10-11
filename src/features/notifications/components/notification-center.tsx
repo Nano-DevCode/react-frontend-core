@@ -29,7 +29,7 @@ import {
 } from '../hooks/use-notifications';
 import { useNotificationsSocket } from '../hooks/use-notifications-socket';
 import { openOrDownloadPdf } from '@/features/documents/utils/file-utils';
-import type { AppNotification } from '@/types/notification.types';
+import type { AppNotification } from '../types/notification.types';
 
 const formatTimeAgo = (dateStr: string): string => {
   try {

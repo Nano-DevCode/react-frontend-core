@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Play,
   Pause,
@@ -41,22 +41,18 @@ export const PlayerControls = ({
   isLoadingQueue,
 }: PlayerControlsProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedVoiceChannelId, setSelectedVoiceChannelId] = useState<string>(
-    guild.voiceChannels[0]?.id || ''
-  );
-  const [volumeInput, setVolumeInput] = useState<number>(queue?.volume || 100);
+  const [selectedVoiceChannelId, setSelectedVoiceChannelId] = useState<string>('');
+  const activeVoiceChannelId =
+    selectedVoiceChannelId || guild.voiceChannels[0]?.id || '';
 
-  useEffect(() => {
-    if (!selectedVoiceChannelId && guild.voiceChannels.length > 0) {
-      setSelectedVoiceChannelId(guild.voiceChannels[0].id);
-    }
-  }, [guild.voiceChannels, selectedVoiceChannelId]);
+  const currentVolume = queue?.volume ?? 100;
+  const [prevQueueVolume, setPrevQueueVolume] = useState(currentVolume);
+  const [volumeInput, setVolumeInput] = useState<number>(currentVolume);
 
-  useEffect(() => {
-    if (typeof queue?.volume === 'number') {
-      setVolumeInput(queue.volume);
-    }
-  }, [queue?.volume]);
+  if (currentVolume !== prevQueueVolume) {
+    setPrevQueueVolume(currentVolume);
+    setVolumeInput(currentVolume);
+  }
 
   const playbackMutation = usePlaybackMutation(guild.id);
 
@@ -102,7 +98,7 @@ export const PlayerControls = ({
 
   const handleSearchPlay = () => {
     if (!searchQuery.trim()) return;
-    const channelId = selectedVoiceChannelId || guild.voiceChannels[0]?.id;
+    const channelId = activeVoiceChannelId;
     if (!channelId) return;
 
     playbackMutation.mutate(
@@ -132,7 +128,7 @@ export const PlayerControls = ({
         <div className="flex items-center gap-2 min-w-[200px]">
           <Radio className="h-4 w-4 text-primary shrink-0" />
           <select
-            value={selectedVoiceChannelId}
+            value={activeVoiceChannelId}
             onChange={(e) => setSelectedVoiceChannelId(e.target.value)}
             className="w-full text-xs font-medium rounded-lg border border-input bg-background/80 px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           >

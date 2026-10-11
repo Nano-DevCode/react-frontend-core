@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import type { FeatureFlagRecord, BetaFeatureResponse } from '@/types/feature-flags.types';
+import { BetaFeatureResponse, FeatureFlagRecord } from '../types/feature-flags.types';
 
 export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
   {
@@ -34,8 +34,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
     id: 'ff-4',
     key: 'DISCORD_BOT_ENABLED',
     description: 'Módulo del bot de música en Discord y orquestación con Lavalink v4.',
-    isEnabled: true,
-    rules: { percentage: 100, allowedRoles: ['admin', 'user'] },
+    isEnabled: false,
+    rules: { percentage: 0, allowedRoles: ['admin'] },
     createdAt: '2026-09-10T10:00:00.000Z',
     updatedAt: '2026-09-16T12:00:00.000Z',
   },
@@ -103,14 +103,15 @@ export interface PublicFeatureFlags {
 
 export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlags> => {
   try {
-    const response = await apiClient.get<any>(
+    const response = await apiClient.get<Record<string, unknown>>(
       API_ENDPOINTS.FEATURE_FLAGS.PUBLIC,
       { suppressToast: true }
     );
-    const raw =
+    const raw = (
       response.data && typeof response.data === 'object' && 'data' in response.data
-        ? response.data.data
-        : response.data;
+        ? (response.data as { data: Record<string, unknown> }).data
+        : response.data
+    ) as Record<string, unknown> | null | undefined;
 
     return {
       oauth_social_login: Boolean(raw?.oauth_social_login),

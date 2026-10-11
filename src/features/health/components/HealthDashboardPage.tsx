@@ -19,7 +19,7 @@ import {
   MOCK_MEMORY_SPARKLINE,
 } from '../constants/health-mock-data';
 import { useHealthCheckQuery } from '../hooks/use-health';
-import type { HealthCheckResponse, MemoryHealthDetail } from '@/types/health.types';
+import { HealthCheckResponse, MemoryHealthDetail } from '../types/health.types';
 
 /**
  * Valida si un servicio reportado por NestJS Terminus se encuentra saludable.

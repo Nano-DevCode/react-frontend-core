@@ -81,12 +81,14 @@ export const UsersTableToolbar = ({
                     ? 'Todos'
                     : statusFilter === 'ACTIVE'
                     ? 'Activos'
+                    : statusFilter === 'DELETED'
+                    ? 'Papelera / Eliminados'
                     : 'Suspendidos'}
                 </span>
               </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 notranslate">
+          <DropdownMenuContent align="end" className="w-44 notranslate">
             <DropdownMenuItem onClick={() => onStatusFilterChange('ALL')}>
               <span>Todos los estados</span>
             </DropdownMenuItem>
@@ -95,6 +97,9 @@ export const UsersTableToolbar = ({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onStatusFilterChange('SUSPENDED')}>
               <span>Solo Suspendidos</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onStatusFilterChange('DELETED')}>
+              <span className="text-destructive font-medium">Papelera / Eliminados</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

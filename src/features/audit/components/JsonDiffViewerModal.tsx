@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { FileDiff, Globe, Calendar, User, Terminal } from 'lucide-react';
-import type { AuditLogRecord } from '@/types/audit.types';
+import { AuditLogRecord } from '../types/audit.types';
 
 interface JsonDiffViewerModalProps {
   log: AuditLogRecord | null;

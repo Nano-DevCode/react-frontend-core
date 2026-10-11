@@ -15,7 +15,7 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { toast } from 'sonner';
-import type { TwoFactorGenerateResponse } from '@/types/two-factor.types';
+import type { TwoFactorGenerateResponse } from '../types/two-factor.types';
 
 interface TwoFactorSetupViewProps {
   secretData?: TwoFactorGenerateResponse;

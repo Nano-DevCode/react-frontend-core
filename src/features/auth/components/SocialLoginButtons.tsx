@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { apiClient } from '@/api/client';
@@ -38,6 +38,30 @@ export const SocialLoginButtons = () => {
   const { data: flags, isLoading } = usePublicFeatureFlagsQuery();
   const [redirectingProvider, setRedirectingProvider] = useState<'google' | 'facebook' | null>(null);
 
+  useEffect(() => {
+    if (!redirectingProvider) return;
+
+    // Al restaurar la página desde la caché de navegación hacia atrás (bfcache)
+    // o al recuperar el foco de la ventana cuando el usuario regresa, limpiamos el spinner.
+    const resetLoading = () => {
+      setRedirectingProvider(null);
+    };
+
+    window.addEventListener('pageshow', resetLoading);
+    window.addEventListener('focus', resetLoading);
+
+    // Timeout de seguridad: si el usuario cancela la navegación o tarda la red
+    const timer = setTimeout(() => {
+      setRedirectingProvider(null);
+    }, 6000);
+
+    return () => {
+      window.removeEventListener('pageshow', resetLoading);
+      window.removeEventListener('focus', resetLoading);
+      clearTimeout(timer);
+    };
+  }, [redirectingProvider]);
+
   if (isLoading || !flags?.oauth_social_login) {
     return null;
   }
@@ -52,7 +76,8 @@ export const SocialLoginButtons = () => {
   const handleOAuthRedirect = (provider: 'google' | 'facebook') => {
     setRedirectingProvider(provider);
     const baseURL = (apiClient.defaults.baseURL || '/api').replace(/\/+$/, '');
-    window.location.href = `${baseURL}/auth/${provider}`;
+    const currentOrigin = window.location.origin;
+    window.location.href = `${baseURL}/auth/${provider}?redirect_uri=${encodeURIComponent(currentOrigin)}`;
   };
 
   return (

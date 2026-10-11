@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 import { router } from './router/app-router';
 import { AppPreloader } from './components/shared/AppPreloader';
 import { useAuthStore } from './stores/use-auth-store';
@@ -69,15 +69,7 @@ export default function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        duration={4000}
-        toastOptions={{
-          className: 'notranslate font-sans text-xs',
-        }}
-      />
+      <Toaster position="top-right" />
     </>
   );
 }

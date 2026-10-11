@@ -14,7 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { uploadFileAction } from '../actions/files.actions';
 import { MalwareAlertModal } from './MalwareAlertModal';
 import { cn } from '@/lib/utils';
-import type { UploadResult } from '@/types/files.types';
+import { UploadResult } from '../types/files.types';
 
 export interface UploadFileItem {
   id: string;

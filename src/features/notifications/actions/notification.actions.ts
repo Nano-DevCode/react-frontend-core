@@ -1,12 +1,6 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import type {
-  AppNotification,
-  NotificationListResponse,
-  NotificationQueryParams,
-  UnreadCountResponse,
-  MarkReadResponse,
-} from '@/types/notification.types';
+import { AppNotification, MarkReadResponse, NotificationListResponse, NotificationQueryParams, UnreadCountResponse } from '../types/notification.types';
 
 export const fetchNotificationsAction = async (
   params?: NotificationQueryParams

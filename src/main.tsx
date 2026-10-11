@@ -9,6 +9,21 @@ import App from './App';
 // Capa 4: Polyfill Defensivo a Nivel DOM contra Crashes de Google Translate
 // ============================================================================
 if (typeof window !== 'undefined') {
+  // Limpiar bandera de reintento de recarga tras arranque exitoso
+  try {
+    window.sessionStorage.removeItem('chunk_reload_attempted');
+  } catch {
+    // Modo privado o restricciones de almacenamiento
+  }
+
+  // Interceptar fallos de precarga de chunks de Vite
+  window.addEventListener('vite:preloadError', (event) => {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('Vite preload error interceptado, recargando página de forma controlada...', event);
+    }
+    window.location.reload();
+  });
+
   const originalRemoveChild = Node.prototype.removeChild;
   Node.prototype.removeChild = function <T extends Node>(child: T): T {
     if (child.parentNode !== this) {

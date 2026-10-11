@@ -4,7 +4,8 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-import { useFeatureFlag } from '@/features/feature-flags/hooks/use-feature-flags';
+import { BentoGridSkeleton } from '@/components/shared/BentoGridSkeleton';
+import { useFeatureFlagStatus } from '@/features/feature-flags/hooks/use-feature-flags';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -70,10 +71,14 @@ export const FeatureFlagGuard = ({
   flagKey,
   fallback,
 }: FeatureFlagGuardProps) => {
-  const isEnabled = useFeatureFlag(flagKey);
+  const { isEnabled, isLoading } = useFeatureFlagStatus(flagKey);
+
+  if (isLoading) {
+    return fallback ? <>{fallback}</> : <BentoGridSkeleton />;
+  }
 
   if (!isEnabled) {
-    return fallback ? <>{fallback}</> : <Navigate to="/" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

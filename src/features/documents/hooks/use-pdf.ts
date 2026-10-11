@@ -6,7 +6,7 @@ import type {
   PdfGeneratePayload,
   PdfGenerateResponse,
   PdfPreviewSyncPayload,
-} from '@/types/pdf.types';
+} from '../types/pdf.types';
 
 export const useGeneratePdfMutation = () => {
   const queryClient = useQueryClient();

@@ -9,7 +9,7 @@ import {
 import type {
   AppNotification,
   NotificationQueryParams,
-} from '@/types/notification.types';
+} from '../types/notification.types';
 
 export const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const;
 export const UNREAD_COUNT_QUERY_KEY = ['notifications', 'unread-count'] as const;

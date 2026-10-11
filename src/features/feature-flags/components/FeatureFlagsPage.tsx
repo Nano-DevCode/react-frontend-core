@@ -12,10 +12,10 @@ import {
   fetchBetaFeatureAction,
   DEFAULT_FEATURE_FLAGS,
 } from '../actions/feature-flags.actions';
-import type { FeatureFlagRecord } from '@/types/feature-flags.types';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+import { FeatureFlagRecord } from '../types/feature-flags.types';
 
 export default function FeatureFlagsPage() {
   const { data: apiFlags, refetch, isFetching } = useFeatureFlagsQuery();

@@ -1,7 +1,7 @@
 import { FileDiff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { AuditLogRecord } from '@/types/audit.types';
+import { AuditLogRecord } from '../types/audit.types';
 
 interface AuditLogsTableProps {
   logs: AuditLogRecord[];

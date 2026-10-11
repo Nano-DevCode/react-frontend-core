@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAssignRoleMutation } from '../hooks/use-users';
-import type { UserRecord } from '@/types/users.types';
+import { useAssignRoleMutation } from '../../hooks/use-users';
+import type { UserRecord } from '../../types/users.types';
 
 interface UserRoleDialogProps {
   user: UserRecord | null;
@@ -76,21 +76,13 @@ const RoleAssignmentForm = ({
     );
   };
 
-  const inheritedPermissions = Array.from(
-    new Set(
-      AVAILABLE_ROLES.filter((r) => selectedRoles.includes(r.name)).flatMap(
-        (r) => r.permissions
-      )
-    )
-  );
-
   return (
     <>
       <DialogHeader>
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
           <DialogTitle className="text-base font-bold">
-            <span>Administrar Roles y Permisos RBAC</span>
+            <span>Administrar Roles</span>
           </DialogTitle>
         </div>
         <DialogDescription className="text-xs">
@@ -142,25 +134,6 @@ const RoleAssignmentForm = ({
               </div>
             );
           })}
-        </div>
-
-        <div className="rounded-xl border border-border/50 bg-muted/30 p-3 space-y-2">
-          <span className="text-[11px] font-semibold text-muted-foreground">
-            <span>Permisos granulares resultantes:</span>
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {inheritedPermissions.length > 0 ? (
-              inheritedPermissions.map((perm) => (
-                <Badge key={perm} variant="outline" className="text-[10px] font-mono bg-background">
-                  <span>{perm}</span>
-                </Badge>
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground italic">
-                <span>Sin permisos especiales asignados</span>
-              </span>
-            )}
-          </div>
         </div>
       </div>
 

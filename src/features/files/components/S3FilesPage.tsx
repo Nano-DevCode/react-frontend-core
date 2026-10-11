@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FileDropzone } from './FileDropzone';
 import { FileGallery } from './FileGallery';
-import type { UploadResult } from '@/types/files.types';
+import { UploadResult } from '../types/files.types';
 
 // Initial files list starts empty until uploaded
 const INITIAL_FILES: UploadResult[] = [];

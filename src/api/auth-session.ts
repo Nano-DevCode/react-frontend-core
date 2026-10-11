@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { API_ENDPOINTS } from './endpoints';
 import { isTokenExpired } from '@/utils/jwt';
-import type { RefreshTokenResponse } from '@/types/auth.types';
+import type { RefreshTokenResponse } from '@/features/auth/types/auth.types';
 
 /**
  * Instancia aislada de Axios exclusivamente para operaciones de autenticación y refresco.
@@ -113,6 +113,7 @@ export const syncUserSession = async (): Promise<void> => {
     await refreshAuthSession();
   } catch (err) {
     console.warn('Advertencia: No se pudo resincronizar la sesión con el backend:', err);
+    throw err;
   }
 };
 

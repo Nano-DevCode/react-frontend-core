@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   MessageSquare,
   Hash,
@@ -25,23 +25,19 @@ export const GuildChatAndChannelCard = ({
   guild,
 }: GuildChatAndChannelCardProps) => {
   const currentDedicatedId = guild.config?.dedicatedChannelId || '';
+  const [prevDedicatedId, setPrevDedicatedId] = useState(currentDedicatedId);
   const [selectedDedicatedChannel, setSelectedDedicatedChannel] =
     useState<string>(currentDedicatedId);
 
-  const [messageTargetChannel, setMessageTargetChannel] = useState<string>(
-    guild.textChannels[0]?.id || '',
-  );
+  if (currentDedicatedId !== prevDedicatedId) {
+    setPrevDedicatedId(currentDedicatedId);
+    setSelectedDedicatedChannel(currentDedicatedId);
+  }
+
+  const [messageTargetChannel, setMessageTargetChannel] = useState<string>('');
+  const activeMessageTarget =
+    messageTargetChannel || guild.textChannels[0]?.id || '';
   const [messageText, setMessageText] = useState<string>('');
-
-  useEffect(() => {
-    setSelectedDedicatedChannel(guild.config?.dedicatedChannelId || '');
-  }, [guild.config?.dedicatedChannelId]);
-
-  useEffect(() => {
-    if (!messageTargetChannel && guild.textChannels.length > 0) {
-      setMessageTargetChannel(guild.textChannels[0].id);
-    }
-  }, [guild.textChannels, messageTargetChannel]);
 
   const updateConfigMutation = useUpdateGuildConfigMutation(guild.id);
   const sendMessageMutation = useSendMessageMutation(guild.id);
@@ -63,11 +59,11 @@ export const GuildChatAndChannelCard = ({
   };
 
   const handleSendMessage = () => {
-    if (!messageTargetChannel || !messageText.trim()) return;
+    if (!activeMessageTarget || !messageText.trim()) return;
 
     sendMessageMutation.mutate(
       {
-        channelId: messageTargetChannel,
+        channelId: activeMessageTarget,
         content: messageText.trim(),
       },
       {
@@ -211,7 +207,7 @@ export const GuildChatAndChannelCard = ({
               Canal de Destino
             </label>
             <select
-              value={messageTargetChannel}
+              value={activeMessageTarget}
               onChange={(e) => setMessageTargetChannel(e.target.value)}
               className="w-full text-xs font-medium rounded-lg border border-input bg-background/80 px-3 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             >

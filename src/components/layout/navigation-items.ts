@@ -76,7 +76,7 @@ export const navigationItems: NavigationItem[] = [
     title: 'Bot Discord',
     path: '/admin/discord-bot',
     icon: Headphones,
-    roles: ['admin', 'user'],
+    roles: ['admin'],
     badge: 'Bot',
     featureFlag: 'DISCORD_BOT_ENABLED',
   },

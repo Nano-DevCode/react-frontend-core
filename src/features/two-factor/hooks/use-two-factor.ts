@@ -14,7 +14,7 @@ import type {
   TwoFactorCodeDto,
   Toggle2FADto,
   TwoFactorAuthDto,
-} from '@/types/two-factor.types';
+} from '../types/two-factor.types';
 
 export const useTwoFactorStatusQuery = (enabled = true) => {
   const updateUser = useAuthStore((state) => state.updateUser);

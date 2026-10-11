@@ -9,7 +9,7 @@ import {
   logoutAction,
 } from '../actions/auth.actions';
 import { useAuthStore } from '@/stores/use-auth-store';
-import type { LoginDto, RegisterDto, ResendVerificationDto } from '@/types/auth.types';
+import type { LoginDto, RegisterDto, ResendVerificationDto } from '../types/auth.types';
 
 export const useLoginMutation = () => {
   const setAuth = useAuthStore((state) => state.setAuth);

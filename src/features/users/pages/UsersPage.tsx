@@ -1,17 +1,31 @@
-import { LayoutGrid, Table as TableIcon, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LayoutGrid, Table as TableIcon, RefreshCw, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { UsersTable } from './UsersTable';
-import { MobileUserCards } from './MobileUserCards';
+import { PaginationBar } from '@/components/shared/PaginationBar';
+import { useUrlPagination } from '@/hooks/use-url-pagination';
+import { UsersTable } from '../components/general/UsersTable';
+import { MobileUserCards } from '../components/general/MobileUserCards';
 import { useUsersQuery } from '../hooks/use-users';
 import { useUIStore } from '@/stores/use-ui-store';
-import type { UserRecord } from '@/types/users.types';
+import type { UserRecord } from '../types/users.types';
 
 export default function UsersPage() {
-  const { data: apiUsers, isLoading, refetch } = useUsersQuery();
+  const navigate = useNavigate();
+  const { page, limit } = useUrlPagination({ defaultLimit: 10 });
+  const { data: apiUsers, isLoading, isFetching, refetch } = useUsersQuery({
+    page,
+    limit,
+    status: 'all',
+  });
   const { usersViewMode, setUsersViewMode } = useUIStore();
 
-  const users: UserRecord[] = apiUsers ?? [];
+  const users: UserRecord[] = Array.isArray(apiUsers?.users)
+    ? apiUsers.users
+    : [];
+
+  const totalPages = apiUsers?.totalPages ?? 1;
+  const total = apiUsers?.total ?? users.length;
 
   if (isLoading) {
     return <TableSkeleton rows={8} columns={6} />;
@@ -61,26 +75,48 @@ export default function UsersPage() {
             variant="outline"
             size="sm"
             onClick={() => refetch()}
+            disabled={isFetching}
             className="h-9 gap-1.5 text-xs"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
             <span>Refrescar</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => navigate('/usuarios/crear')}
+            className="h-9 gap-1.5 text-xs font-semibold shadow-xs"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span>Nuevo Usuario</span>
           </Button>
         </div>
       </div>
 
-      {/* Contenido según vista y resolución */}
-      <div className="hidden lg:block">
-        {usersViewMode === 'table' ? (
-          <UsersTable users={users} />
-        ) : (
-          <MobileUserCards users={users} />
-        )}
-      </div>
+      {/* Contenido según vista y resolución con transición suave de fetching */}
+      <div className={`space-y-4 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+        <div className="hidden lg:block">
+          {usersViewMode === 'table' ? (
+            <UsersTable users={users} />
+          ) : (
+            <MobileUserCards users={users} />
+          )}
+        </div>
 
-      {/* En pantallas móviles se muestra MobileUserCards */}
-      <div className="block lg:hidden">
-        <MobileUserCards users={users} />
+        {/* En pantallas móviles se muestra MobileUserCards */}
+        <div className="block lg:hidden">
+          <MobileUserCards users={users} />
+        </div>
+
+        {/* Paginación universal sincronizada con la URL */}
+        <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
+          <PaginationBar
+            totalPages={totalPages}
+            totalRecords={total}
+            pageSizeOptions={[5, 10, 20, 50]}
+            isLoading={isFetching}
+          />
+        </div>
       </div>
     </div>
   );

@@ -83,3 +83,4 @@ export interface SystemTelemetryResponse {
   storage: StorageTelemetry;
   security: SecurityTelemetry;
 }
+
