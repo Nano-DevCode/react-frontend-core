@@ -1,6 +1,6 @@
-import { Search, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/shared/SearchInput';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -31,16 +31,13 @@ export const UsersTableToolbar = ({
 }: UsersTableToolbarProps) => {
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 notranslate">
-      {/* Search */}
-      <div className="relative flex-1 sm:max-w-xs">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nombre o correo..."
-          value={globalFilter}
-          onChange={(e) => onGlobalFilterChange(e.target.value)}
-          className="pl-9 h-9 text-xs focus-visible:ring-2 focus-visible:ring-primary/30"
-        />
-      </div>
+      {/* Search reutilizable */}
+      <SearchInput
+        placeholder="Buscar por nombre o correo..."
+        value={globalFilter}
+        onChange={onGlobalFilterChange}
+        className="flex-1 sm:max-w-xs"
+      />
 
       {/* Filters & Export Actions */}
       <div className="flex items-center gap-2 flex-wrap">
