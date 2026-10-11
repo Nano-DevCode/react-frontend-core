@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { JsonDiffViewerModal } from './JsonDiffViewerModal';
 import { AuditLogsToolbar, type AuditActionFilter } from './AuditLogsToolbar';
 import { AuditLogsTable } from './AuditLogsTable';
@@ -39,22 +40,11 @@ export default function AuditLogsPage() {
 
   return (
     <div className="notranslate space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold tracking-tight text-foreground m-0">
-              <span>Trazabilidad y Registro de Auditoría</span>
-            </h2>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            <span>
-              Registro inmutable de todas las mutaciones, accesos y operaciones realizadas en la plataforma.
-            </span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* Header reutilizable */}
+      <PageHeader
+        title="Trazabilidad y Registro de Auditoría"
+        description="Registro inmutable de todas las mutaciones, accesos y operaciones realizadas en la plataforma."
+        actions={
           <Button
             variant="outline"
             size="sm"
@@ -64,8 +54,8 @@ export default function AuditLogsPage() {
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Actualizar Logs</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Controles de Búsqueda y Filtros */}
       <AuditLogsToolbar
