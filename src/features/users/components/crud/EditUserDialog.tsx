@@ -52,10 +52,9 @@ export const EditUserDialog = ({
       setEmail(activeUser.email || '');
       setPassword('');
       setFirstName(activeUser.profile?.firstName || '');
+      setFirstLastName(activeUser.profile?.firstLastName || '');
+      setSecondLastName(activeUser.profile?.secondLastName || '');
 
-      const lastParts = (activeUser.profile?.lastName || '').trim().split(/\s+/);
-      setFirstLastName(activeUser.profile?.firstLastName || lastParts[0] || '');
-      setSecondLastName(activeUser.profile?.secondLastName || lastParts.slice(1).join(' ') || '');
 
       setBio(activeUser.profile?.bio || '');
       setIsActive(activeUser.isActive ?? true);

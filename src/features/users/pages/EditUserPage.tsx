@@ -44,10 +44,9 @@ export default function EditUserPage() {
       setEmail(user.email || '');
       setPassword('');
       setFirstName(user.profile?.firstName || '');
+      setFirstLastName(user.profile?.firstLastName || '');
+      setSecondLastName(user.profile?.secondLastName || '');
 
-      const lastParts = (user.profile?.lastName || '').trim().split(/\s+/);
-      setFirstLastName(user.profile?.firstLastName || lastParts[0] || '');
-      setSecondLastName(user.profile?.secondLastName || lastParts.slice(1).join(' ') || '');
 
       setBio(user.profile?.bio || '');
       setIsActive(user.isActive ?? true);

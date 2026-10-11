@@ -23,10 +23,10 @@ export interface UserProfileRecord {
   firstName?: string | null;
   firstLastName?: string | null;
   secondLastName?: string | null;
-  lastName?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
 }
+
 
 export interface UserRecord {
   id: string;
@@ -68,7 +68,6 @@ export interface CreateUserDto {
     firstName: string;
     firstLastName: string;
     secondLastName: string;
-    lastName?: string;
     bio?: string;
     avatarUrl?: string;
   };
@@ -84,11 +83,11 @@ export interface UpdateUserDto {
     firstName?: string;
     firstLastName?: string;
     secondLastName?: string;
-    lastName?: string;
     bio?: string;
     avatarUrl?: string;
   };
 }
+
 
 export interface ToggleUserStatusDto {
   userId: string;
