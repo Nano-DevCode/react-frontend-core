@@ -54,7 +54,8 @@ const RoleAssignmentForm = ({
   const initialRoles = user.roles?.map((r) => r.role.name) || ['user'];
   const [selectedRoles, setSelectedRoles] = useState<string[]>(initialRoles);
   const { mutate: assignRoles, isPending } = useAssignRoleMutation();
-  const { data: dbRoles = [], isLoading: isLoadingRoles } = useRolesQuery();
+  const { data: rolesResponse, isLoading: isLoadingRoles } = useRolesQuery({ all: true });
+  const dbRoles = rolesResponse?.roles ?? [];
 
   const rolesList = dbRoles.length > 0
     ? [...dbRoles].sort((a, b) => b.priority - a.priority)

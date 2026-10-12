@@ -31,3 +31,22 @@ export interface UpdateRoleDto {
   permissionIds?: string[];
 }
 
+export interface QueryRolesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: 'name' | 'priority' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  all?: boolean;
+}
+
+export interface PaginatedRolesResponse {
+  roles: RoleRecord[];
+  data: RoleRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}

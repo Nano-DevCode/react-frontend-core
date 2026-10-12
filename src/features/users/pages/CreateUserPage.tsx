@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCreateUserMutation } from '../hooks/use-users';
+import { useRolesQuery } from '@/features/roles/hooks/use-roles';
 
 const AVAILABLE_ROLES = [
   { name: 'superadmin', label: 'Super Admin (Prioridad: 100)' },
@@ -25,6 +26,18 @@ const AVAILABLE_ROLES = [
 
 export default function CreateUserPage() {
   const navigate = useNavigate();
+  const { data: rolesResponse } = useRolesQuery({ all: true });
+
+  const availableRoles = useMemo(() => {
+    if (rolesResponse?.roles && rolesResponse.roles.length > 0) {
+      return rolesResponse.roles.map((r) => ({
+        name: r.name,
+        label: `${r.name} (Prioridad: ${r.priority})`,
+      }));
+    }
+    return AVAILABLE_ROLES;
+  }, [rolesResponse]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -276,7 +289,7 @@ export default function CreateUserPage() {
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
             <div className="flex flex-wrap gap-2.5">
-              {AVAILABLE_ROLES.map((r) => {
+              {availableRoles.map((r) => {
                 const isSelected = selectedRoles.includes(r.name);
                 return (
                   <Badge

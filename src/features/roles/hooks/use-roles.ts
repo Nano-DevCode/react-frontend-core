@@ -13,15 +13,17 @@ import type {
   SystemPermission,
   CreateRoleDto,
   UpdateRoleDto,
+  QueryRolesParams,
+  PaginatedRolesResponse,
 } from '../types/roles.types';
 
 export const ROLES_QUERY_KEY = ['roles'];
 export const PERMISSIONS_QUERY_KEY = ['roles', 'permissions'];
 
-export const useRolesQuery = () => {
-  return useQuery<RoleRecord[]>({
-    queryKey: ROLES_QUERY_KEY,
-    queryFn: fetchRolesAction,
+export const useRolesQuery = (params?: QueryRolesParams) => {
+  return useQuery<PaginatedRolesResponse>({
+    queryKey: [...ROLES_QUERY_KEY, params],
+    queryFn: () => fetchRolesAction(params),
     staleTime: 1000 * 30, // 30 segundos
     refetchOnMount: true,
   });

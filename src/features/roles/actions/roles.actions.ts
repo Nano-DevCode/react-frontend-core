@@ -5,14 +5,46 @@ import type {
   SystemPermission,
   CreateRoleDto,
   UpdateRoleDto,
+  QueryRolesParams,
+  PaginatedRolesResponse,
 } from '../types/roles.types';
 
-export const fetchRolesAction = async (): Promise<RoleRecord[]> => {
-  const response = await apiClient.get<RoleRecord[]>(
+export const fetchRolesAction = async (
+  params?: QueryRolesParams,
+): Promise<PaginatedRolesResponse> => {
+  const response = await apiClient.get<PaginatedRolesResponse | RoleRecord[]>(
     API_ENDPOINTS.ROLES.BASE,
-    { suppressToast: true },
+    {
+      params,
+      suppressToast: true,
+    },
   );
-  return Array.isArray(response.data) ? response.data : [];
+
+  const resData = response.data;
+  if (Array.isArray(resData)) {
+    return {
+      roles: resData,
+      data: resData,
+      total: resData.length,
+      page: 1,
+      limit: resData.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+    };
+  }
+
+  const roleList = resData.roles || resData.data || [];
+  return {
+    roles: roleList,
+    data: roleList,
+    total: resData.total ?? roleList.length,
+    page: resData.page ?? 1,
+    limit: resData.limit ?? 10,
+    totalPages: resData.totalPages ?? 1,
+    hasNextPage: Boolean(resData.hasNextPage),
+    hasPrevPage: Boolean(resData.hasPrevPage),
+  };
 };
 
 export const fetchPermissionsAction = async (): Promise<SystemPermission[]> => {
@@ -58,4 +90,3 @@ export const deleteRoleAction = async (
   );
   return response.data;
 };
-
