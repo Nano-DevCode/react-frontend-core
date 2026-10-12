@@ -94,8 +94,14 @@ export const FileDropzone = ({ onUploadSuccess }: FileDropzoneProps) => {
 
         // Éxito confirmado
         updateItem(item.id, { phase: 'SUCCESS', progress: 100 });
-        if (onUploadSuccess) onUploadSuccess(result);
-        return { success: true, item, result };
+        const resultWithPreview: UploadResult = {
+          ...result,
+          previewUrl: item.file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg|bmp)$/i.test(item.file.name)
+            ? URL.createObjectURL(item.file)
+            : result.previewUrl,
+        };
+        if (onUploadSuccess) onUploadSuccess(resultWithPreview);
+        return { success: true, item, result: resultWithPreview };
       } catch (err: unknown) {
         const msg = (
           err as { response?: { data?: { message?: string } } }

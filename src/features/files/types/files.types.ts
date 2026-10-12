@@ -10,6 +10,7 @@ export interface UploadResult {
   mimetype: string;
   originalName: string;
   filename?: string;
+  previewUrl?: string;
 }
 
 export type FileResponseDto = UploadResult;
