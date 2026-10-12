@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Shield,
   Plus,
@@ -18,11 +19,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRolesQuery, useDeleteRoleMutation } from '../hooks/use-roles';
-import { RoleFormDialog } from './RoleFormDialog';
 import type { RoleRecord } from '../types/roles.types';
 import { cn } from '@/lib/utils';
 
 export default function RolesPage() {
+  const navigate = useNavigate();
   const { page, limit, setPage, setLimit } = useUrlPagination({
     defaultPage: 1,
     defaultLimit: 8,
@@ -56,21 +57,8 @@ export default function RolesPage() {
 
   const { mutate: deleteRole, isPending: isDeleting } = useDeleteRoleMutation();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RoleRecord | null>(null);
-
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<RoleRecord | null>(null);
-
-  const handleOpenCreate = () => {
-    setSelectedRole(null);
-    setDialogOpen(true);
-  };
-
-  const handleOpenEdit = (role: RoleRecord) => {
-    setSelectedRole(role);
-    setDialogOpen(true);
-  };
 
   const handleOpenDelete = (role: RoleRecord) => {
     setRoleToDelete(role);
@@ -114,8 +102,8 @@ export default function RolesPage() {
             <Button
               variant="default"
               size="sm"
-              onClick={handleOpenCreate}
-              className="h-9 gap-1.5 text-xs"
+              onClick={() => navigate('/roles/crear')}
+              className="h-9 gap-1.5 text-xs font-semibold shadow-xs"
             >
               <Plus className="h-4 w-4" />
               <span>Nuevo Rol</span>
@@ -253,7 +241,7 @@ export default function RolesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleOpenEdit(role)}
+                        onClick={() => navigate(`/roles/${role.id}/editar`)}
                         className="h-8 text-xs gap-1"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
@@ -303,13 +291,6 @@ export default function RolesPage() {
           </div>
         </div>
       )}
-
-      {/* Modal de Creación / Edición */}
-      <RoleFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        role={selectedRole}
-      />
 
       {/* Modal de Confirmación de Eliminación */}
       <ConfirmDialog
