@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Play,
   Pause,
@@ -48,11 +48,20 @@ export const PlayerControls = ({
   const currentVolume = queue?.volume ?? 100;
   const [prevQueueVolume, setPrevQueueVolume] = useState(currentVolume);
   const [volumeInput, setVolumeInput] = useState<number>(currentVolume);
+  const volumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (currentVolume !== prevQueueVolume) {
     setPrevQueueVolume(currentVolume);
     setVolumeInput(currentVolume);
   }
+
+  useEffect(() => {
+    return () => {
+      if (volumeTimeoutRef.current) {
+        clearTimeout(volumeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const playbackMutation = usePlaybackMutation(guild.id);
 
@@ -116,9 +125,39 @@ export const PlayerControls = ({
   };
 
   const handleVolumeChange = (newVol: number) => {
-    const clamped = Math.max(0, Math.min(200, newVol));
-    setVolumeInput(clamped);
-    playbackMutation.mutate({ action: 'volume', value: clamped });
+    // Redondear a múltiplos de 5
+    const stepped = Math.max(0, Math.min(200, Math.round(newVol / 5) * 5));
+    setVolumeInput(stepped);
+
+    // Debounce de 350ms para evitar ráfagas masivas de peticiones al arrastrar el slider
+    if (volumeTimeoutRef.current) {
+      clearTimeout(volumeTimeoutRef.current);
+    }
+
+    volumeTimeoutRef.current = setTimeout(() => {
+      volumeTimeoutRef.current = null;
+      playbackMutation.mutate({ action: 'volume', value: stepped });
+    }, 350);
+  };
+
+  const handleVolumeCommit = () => {
+    // Al soltar el mouse/touch o tecla, se envía inmediatamente la petición pendiente
+    if (volumeTimeoutRef.current) {
+      clearTimeout(volumeTimeoutRef.current);
+      volumeTimeoutRef.current = null;
+      playbackMutation.mutate({ action: 'volume', value: volumeInput });
+    }
+  };
+
+  const handleStepVolume = (delta: number) => {
+    // Subir o bajar de 5 en 5 directamente con un click
+    const nextVol = Math.max(0, Math.min(200, Math.round((volumeInput + delta) / 5) * 5));
+    setVolumeInput(nextVol);
+    if (volumeTimeoutRef.current) {
+      clearTimeout(volumeTimeoutRef.current);
+      volumeTimeoutRef.current = null;
+    }
+    playbackMutation.mutate({ action: 'volume', value: nextVol });
   };
 
   return (
@@ -334,12 +373,20 @@ export const PlayerControls = ({
         </div>
 
         {/* Volume Controls */}
-        <div className="flex items-center gap-2 w-full sm:w-auto min-w-[180px]">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleVolumeChange(volumeInput === 0 ? 100 : 0)}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              const toggled = volumeInput === 0 ? 100 : 0;
+              setVolumeInput(toggled);
+              if (volumeTimeoutRef.current) {
+                clearTimeout(volumeTimeoutRef.current);
+                volumeTimeoutRef.current = null;
+              }
+              playbackMutation.mutate({ action: 'volume', value: toggled });
+            }}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
             title={volumeInput === 0 ? 'Activar sonido' : 'Silenciar'}
           >
             {volumeInput === 0 ? (
@@ -349,6 +396,18 @@ export const PlayerControls = ({
             )}
           </Button>
 
+          {/* Botón rápido -5% */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleStepVolume(-5)}
+            disabled={volumeInput <= 0 || playbackMutation.isPending}
+            className="h-7 px-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-md"
+            title="Bajar volumen 5%"
+          >
+            -5
+          </Button>
+
           <input
             type="range"
             min={0}
@@ -356,10 +415,26 @@ export const PlayerControls = ({
             step={5}
             value={volumeInput}
             onChange={(e) => handleVolumeChange(Number(e.target.value))}
+            onPointerUp={handleVolumeCommit}
+            onTouchEnd={handleVolumeCommit}
+            onKeyUp={handleVolumeCommit}
             className="w-full sm:w-28 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            title={`Volumen: ${volumeInput}% (saltos de 5 en 5)`}
           />
 
-          <span className="text-xs font-mono text-muted-foreground w-9 text-right">
+          {/* Botón rápido +5% */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleStepVolume(5)}
+            disabled={volumeInput >= 200 || playbackMutation.isPending}
+            className="h-7 px-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-md"
+            title="Subir volumen 5%"
+          >
+            +5
+          </Button>
+
+          <span className="text-xs font-mono text-muted-foreground w-11 text-right shrink-0">
             {volumeInput}%
           </span>
         </div>

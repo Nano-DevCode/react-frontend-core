@@ -77,8 +77,8 @@ export const useDiscordSocketSync = (guildId: string | null) => {
           token: accessToken || undefined,
         },
         reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 2000,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 5000,
       });
     }
 
@@ -214,7 +214,9 @@ export const useDiscordBotStatusQuery = () => {
   return useQuery({
     queryKey: ['discord-bot-status'],
     queryFn: fetchBotStatusAction,
-    refetchInterval: 15000,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
+    staleTime: 1000 * 20,
     retry: 1,
   });
 };
@@ -224,7 +226,9 @@ export const useDiscordGuildsQuery = (enabled = true) => {
     queryKey: ['discord-bot-guilds'],
     queryFn: fetchGuildsAction,
     enabled,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
+    refetchIntervalInBackground: false,
+    staleTime: 1000 * 30,
     retry: 1,
   });
 };
@@ -234,9 +238,9 @@ export const useDiscordGuildQueueQuery = (guildId: string | null) => {
     queryKey: ['discord-queue', guildId],
     queryFn: () => (guildId ? fetchGuildQueueAction(guildId) : null),
     enabled: Boolean(guildId),
-    // Con WebSockets activo, el polling actúa únicamente como respaldo cada 60s
     refetchInterval: 60000,
-    staleTime: Infinity,
+    refetchIntervalInBackground: false,
+    staleTime: 1000 * 30,
   });
 };
 
@@ -257,16 +261,27 @@ export const usePlaybackMutation = (guildId: string | null) => {
       if (!guildId) throw new Error('No se ha seleccionado ningún servidor');
       return sendPlaybackAction(guildId, payload);
     },
-    onSuccess: (res) => {
-      if (res.message) {
+    onSuccess: (res, variables) => {
+      // Evitar saturación de toasts con acciones frecuentes de volumen o seek
+      if (res.message && variables.action !== 'volume' && variables.action !== 'seek') {
         toast.success(res.message);
       }
       if (guildId) {
-        void queryClient.invalidateQueries({
-          queryKey: ['discord-queue', guildId],
-        });
+        if (variables.action === 'volume' && typeof variables.value === 'number') {
+          queryClient.setQueryData<DiscordGuildQueue>(
+            ['discord-queue', guildId],
+            (old) => (old ? { ...old, volume: variables.value! } : old),
+          );
+        } else {
+          void queryClient.invalidateQueries({
+            queryKey: ['discord-queue', guildId],
+          });
+        }
       }
-      void queryClient.invalidateQueries({ queryKey: ['discord-bot-guilds'] });
+      // Solo invalidar el listado de servidores si la acción modifica el estado global
+      if (variables.action === 'play' || variables.action === 'stop' || variables.action === 'leave') {
+        void queryClient.invalidateQueries({ queryKey: ['discord-bot-guilds'] });
+      }
     },
     onError: (err: unknown) => {
       toast.error(

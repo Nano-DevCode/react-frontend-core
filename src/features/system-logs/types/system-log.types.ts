@@ -1,18 +1,39 @@
+// ============================================================================
+// CONTRATOS DE REGISTROS DE SISTEMA (/system/logs)
+// ============================================================================
+
 export type LogSource = 'BACKEND' | 'FRONTEND';
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
-export interface SystemLogRecord {
-  id: string;
+/**
+ * Atributos universales y compartidos de un Registro de Sistema
+ */
+export interface SystemLogBase {
   source: LogSource;
   level: LogLevel;
   context: string;
   message: string;
   stackTrace?: string | null;
   metadata?: Record<string, unknown> | null;
+}
+
+/**
+ * Representación de un log de sistema en listados y tablas (SystemLogListItemResponse)
+ */
+export interface SystemLogListItemResponse extends SystemLogBase {
+  id: string;
   userId?: string | null;
   createdAt: string;
 }
 
+/**
+ * Representación detallada de un log de sistema por su ID (SystemLogIdResponse)
+ */
+export type SystemLogIdResponse = SystemLogListItemResponse;
+
+/**
+ * Parámetros de filtrado para consulta de logs
+ */
 export interface LogQueryFilters {
   page?: number;
   limit?: number;
@@ -24,14 +45,20 @@ export interface LogQueryFilters {
   endDate?: string;
 }
 
-export interface PaginatedLogsResponse {
-  data: SystemLogRecord[];
+/**
+ * Sobre de respuesta paginada de logs de sistema (SystemLogListResponse)
+ */
+export interface SystemLogListResponse {
+  data: SystemLogListItemResponse[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 }
 
+/**
+ * Métricas y estadísticas de logs
+ */
 export interface LogStats {
   totalErrors24h: number;
   sourceDistribution: {
@@ -47,7 +74,10 @@ export interface LogStats {
   topFailingContexts: Array<{ context: string; count: number }>;
 }
 
-export interface ClientLogPayload {
+/**
+ * DTO para reportar un log originado en el cliente (CreateClientLogDto)
+ */
+export interface CreateClientLogDto {
   level?: LogLevel;
   context: string;
   message: string;
@@ -56,3 +86,10 @@ export interface ClientLogPayload {
   userId?: string;
 }
 
+// ----------------------------------------------------------------------------
+// ALIASES DE RETROCOMPATIBILIDAD
+// ----------------------------------------------------------------------------
+export type SystemLogRecord = SystemLogListItemResponse;
+export type SystemLogDetailResponse = SystemLogIdResponse;
+export type PaginatedLogsResponse = SystemLogListResponse;
+export type ClientLogPayload = CreateClientLogDto;

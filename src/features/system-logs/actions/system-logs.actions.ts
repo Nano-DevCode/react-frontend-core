@@ -2,14 +2,14 @@ import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
 import type {
   LogQueryFilters,
-  PaginatedLogsResponse,
+  SystemLogListResponse,
   LogStats,
-  ClientLogPayload,
+  CreateClientLogDto,
 } from '../types/system-log.types';
 
 export const fetchSystemLogsAction = async (
   filters: LogQueryFilters = {}
-): Promise<PaginatedLogsResponse> => {
+): Promise<SystemLogListResponse> => {
   const params: Record<string, unknown> = {
     page: filters.page || 1,
     limit: filters.limit || 20,
@@ -39,7 +39,7 @@ export const fetchSystemLogsAction = async (
     params.endDate = filters.endDate;
   }
 
-  const response = await apiClient.get<PaginatedLogsResponse>(
+  const response = await apiClient.get<SystemLogListResponse>(
     API_ENDPOINTS.LOGS.BASE,
     {
       params,
@@ -58,7 +58,7 @@ export const fetchSystemLogStatsAction = async (): Promise<LogStats> => {
 };
 
 export const reportClientLogAction = async (
-  payload: ClientLogPayload
+  payload: CreateClientLogDto
 ): Promise<void> => {
   try {
     await apiClient.post(API_ENDPOINTS.LOGS.CLIENT, payload, {
@@ -68,4 +68,3 @@ export const reportClientLogAction = async (
     // Silenciar errores en el envío de logs para no desencadenar cascadas de errores
   }
 };
-

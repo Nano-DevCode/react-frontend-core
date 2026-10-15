@@ -15,7 +15,17 @@ export interface MemoryHealthDetail extends HealthIndicatorDetail {
   rss?: number;
 }
 
-export interface HealthCheckResponse {
+/**
+ * Atributos universales y compartidos del estado de salud
+ */
+export interface HealthBase {
+  status: 'ok' | 'error' | 'shutting_down' | string;
+}
+
+/**
+ * Respuesta completa de verificación de salud del sistema (HealthCheckResponse)
+ */
+export interface HealthCheckResponse extends HealthBase {
   status: 'ok' | 'error' | 'shutting_down';
   info?: {
     database?: HealthIndicatorDetail;
@@ -75,12 +85,26 @@ export interface SecurityTelemetry {
   firewallStatus: 'active' | 'warning';
 }
 
-export interface SystemTelemetryResponse {
+/**
+ * Atributos base de telemetría
+ */
+export interface TelemetryBase {
   timestamp: string;
   uptimeSeconds: number;
+}
+
+/**
+ * Respuesta completa de telemetría del sistema (SystemTelemetryResponse)
+ */
+export interface SystemTelemetryResponse extends TelemetryBase {
   queues: BullMqTelemetry;
   websockets: WebSocketsTelemetry;
   storage: StorageTelemetry;
   security: SecurityTelemetry;
 }
 
+// ----------------------------------------------------------------------------
+// ALIASES DE RETROCOMPATIBILIDAD
+// ----------------------------------------------------------------------------
+export type HealthStatusResponse = HealthCheckResponse;
+export type TelemetryResponse = SystemTelemetryResponse;

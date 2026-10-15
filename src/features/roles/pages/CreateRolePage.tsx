@@ -9,7 +9,6 @@ import {
   Loader2,
   Search,
   Plus,
-  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

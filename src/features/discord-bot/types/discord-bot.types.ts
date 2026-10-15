@@ -1,3 +1,7 @@
+// ============================================================================
+// CONTRATOS DE DISCORD BOT (/discord-bot)
+// ============================================================================
+
 export interface AudioTrackInfo {
   title: string;
   author: string;
@@ -45,11 +49,20 @@ export interface DiscordGuildConfig {
   updatedAt: string;
 }
 
-export interface DiscordGuildInfo {
+/**
+ * Atributos universales y compartidos de un Servidor de Discord (Guild)
+ */
+export interface DiscordGuildBase {
   id: string;
   name: string;
   icon: string | null;
   memberCount: number;
+}
+
+/**
+ * Representación de un servidor en listados de Discord (DiscordGuildListItemResponse)
+ */
+export interface DiscordGuildListItemResponse extends DiscordGuildBase {
   hasActiveQueue: boolean;
   currentTrack: AudioTrackInfo | null;
   voiceChannels: DiscordVoiceChannel[];
@@ -57,7 +70,20 @@ export interface DiscordGuildInfo {
   config: DiscordGuildConfig | null;
 }
 
-export interface DiscordBotStatus {
+/**
+ * Representación detallada de un servidor de Discord por su ID (DiscordGuildIdResponse)
+ */
+export type DiscordGuildIdResponse = DiscordGuildListItemResponse;
+
+/**
+ * Lista de servidores de Discord
+ */
+export type DiscordGuildListResponse = DiscordGuildListItemResponse[];
+
+/**
+ * Estado general del bot de Discord y Lavalink
+ */
+export interface DiscordBotStatusResponse {
   isEnabled: boolean;
   isDiscordConnected: boolean;
   isLavalinkConnected: boolean;
@@ -70,7 +96,10 @@ export interface DiscordBotStatus {
   } | null;
 }
 
-export interface DiscordGuildQueue {
+/**
+ * Cola de reproducción musical de un servidor (DiscordGuildQueueResponse)
+ */
+export interface DiscordGuildQueueResponse {
   guildId: string;
   currentTrack: AudioTrackItem | null;
   tracks: AudioTrackItem[];
@@ -81,7 +110,10 @@ export interface DiscordGuildQueue {
   position: number;
 }
 
-export interface PlaybackActionPayload {
+/**
+ * DTO para el envío de comandos de reproducción
+ */
+export interface PlaybackActionDto {
   action:
     | 'play'
     | 'pause'
@@ -97,13 +129,28 @@ export interface PlaybackActionPayload {
   value?: number;
 }
 
-export interface SendMessagePayload {
+/**
+ * DTO para enviar un mensaje de texto a un canal de Discord
+ */
+export interface SendMessageDto {
   guildId: string;
   channelId: string;
   content: string;
 }
 
-export interface UpdateGuildConfigPayload {
+/**
+ * DTO para actualizar la configuración de un servidor de Discord
+ */
+export interface UpdateGuildConfigDto {
   dedicatedChannelId?: string | null;
 }
 
+// ----------------------------------------------------------------------------
+// ALIASES DE RETROCOMPATIBILIDAD
+// ----------------------------------------------------------------------------
+export type DiscordGuildInfo = DiscordGuildListItemResponse;
+export type DiscordBotStatus = DiscordBotStatusResponse;
+export type DiscordGuildQueue = DiscordGuildQueueResponse;
+export type PlaybackActionPayload = PlaybackActionDto;
+export type SendMessagePayload = SendMessageDto;
+export type UpdateGuildConfigPayload = UpdateGuildConfigDto;

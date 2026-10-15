@@ -1,20 +1,25 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
 import type { AxiosProgressEvent } from 'axios';
-import { DeleteFileResponse, FileUrlResponse, UploadFileParams, UploadResult } from '../types/files.types';
+import type {
+  DeleteFileResponse,
+  FileUrlResponse,
+  UploadFileDto,
+  FileListItemResponse,
+} from '../types/files.types';
 
 export const uploadFileAction = async ({
   file,
   customName,
   bucket,
   onProgress,
-}: UploadFileParams): Promise<UploadResult> => {
+}: UploadFileDto): Promise<FileListItemResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   if (customName) formData.append('customName', customName);
   if (bucket) formData.append('bucket', bucket);
 
-  const response = await apiClient.post<UploadResult>(
+  const response = await apiClient.post<FileListItemResponse>(
     API_ENDPOINTS.FILES.UPLOAD,
     formData,
     {
@@ -38,13 +43,13 @@ export const uploadMultipleFilesAction = async (
   customName?: string,
   bucket?: string,
   onProgress?: (percent: number) => void
-): Promise<UploadResult[]> => {
+): Promise<FileListItemResponse[]> => {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
   if (customName) formData.append('customName', customName);
   if (bucket) formData.append('bucket', bucket);
 
-  const response = await apiClient.post<UploadResult[]>(
+  const response = await apiClient.post<FileListItemResponse[]>(
     API_ENDPOINTS.FILES.UPLOAD_MULTIPLE,
     formData,
     {
@@ -101,4 +106,3 @@ export const deleteFileAction = async (
   );
   return response.data;
 };
-

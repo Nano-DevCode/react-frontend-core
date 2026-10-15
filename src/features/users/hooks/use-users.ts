@@ -156,10 +156,11 @@ export const useUpdateUserMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuario actualizado exitosamente');
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 'Error al actualizar el usuario'
-      );
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || 'Error al actualizar el usuario';
+      toast.error(message);
     },
   });
 };
@@ -173,10 +174,11 @@ export const useDeleteUserMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuario dado de baja correctamente');
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 'Error al dar de baja al usuario'
-      );
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || 'Error al dar de baja al usuario';
+      toast.error(message);
     },
   });
 };
@@ -190,10 +192,11 @@ export const useRestoreUserMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuario restaurado exitosamente');
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 'Error al restaurar al usuario'
-      );
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || 'Error al restaurar al usuario';
+      toast.error(message);
     },
   });
 };
@@ -207,10 +210,11 @@ export const useCreateUserMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuario creado exitosamente');
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 'Error al crear el usuario'
-      );
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || 'Error al crear el usuario';
+      toast.error(message);
     },
   });
 };

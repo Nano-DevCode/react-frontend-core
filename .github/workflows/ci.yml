@@ -1,0 +1,91 @@
+name: CI/CD Pipeline - Frontend Core
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # 1. Validación de Calidad de Código (Lint + Type Check + Build)
+  # ============================================================================
+  code-quality:
+    name: Code Quality & Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+          run_install: false
+
+      - name: Obtener directorio de caché de pnpm
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Configurar Caché de Dependencias pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Instalación estricta de dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificación de Tipos TypeScript (tsc --noEmit)
+        run: pnpm run type-check
+
+      - name: Análisis Estático de Código (ESLint)
+        run: pnpm run lint
+
+      - name: Compilación de Producción (tsc -b && vite build)
+        run: pnpm run build
+
+  # ============================================================================
+  # 2. Validación del Contenedor Docker (Multi-stage + Nginx)
+  # ============================================================================
+  docker-validation:
+    name: Docker Container Build
+    needs: code-quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir imagen Docker de prueba
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: sistema-frontend:test
+          build-args: |
+            VITE_API_URL=/api
+            VITE_APP_NAME=SaaS Enterprise Security
+            VITE_ENABLE_MOCK_FALLBACK=false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+

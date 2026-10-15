@@ -1,18 +1,19 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
 import type {
-  RoleRecord,
   SystemPermission,
   CreateRoleDto,
   UpdateRoleDto,
   QueryRolesParams,
-  PaginatedRolesResponse,
+  RoleListResponse,
+  RoleIdResponse,
+  RoleListItemResponse,
 } from '../types/roles.types';
 
 export const fetchRolesAction = async (
   params?: QueryRolesParams,
-): Promise<PaginatedRolesResponse> => {
-  const response = await apiClient.get<PaginatedRolesResponse | RoleRecord[]>(
+): Promise<RoleListResponse> => {
+  const response = await apiClient.get<RoleListResponse | RoleListItemResponse[]>(
     API_ENDPOINTS.ROLES.BASE,
     {
       params,
@@ -36,6 +37,7 @@ export const fetchRolesAction = async (
 
   const roleList = resData.roles || resData.data || [];
   return {
+    ...resData,
     roles: roleList,
     data: roleList,
     total: resData.total ?? roleList.length,
@@ -55,16 +57,16 @@ export const fetchPermissionsAction = async (): Promise<SystemPermission[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
-export const fetchRoleByIdAction = async (id: string): Promise<RoleRecord> => {
-  const response = await apiClient.get<RoleRecord>(
+export const fetchRoleByIdAction = async (id: string): Promise<RoleIdResponse> => {
+  const response = await apiClient.get<RoleIdResponse>(
     API_ENDPOINTS.ROLES.BY_ID(id),
     { suppressToast: true },
   );
   return response.data;
 };
 
-export const createRoleAction = async (dto: CreateRoleDto): Promise<RoleRecord> => {
-  const response = await apiClient.post<RoleRecord>(
+export const createRoleAction = async (dto: CreateRoleDto): Promise<RoleIdResponse> => {
+  const response = await apiClient.post<RoleIdResponse>(
     API_ENDPOINTS.ROLES.BASE,
     dto,
   );
@@ -74,8 +76,8 @@ export const createRoleAction = async (dto: CreateRoleDto): Promise<RoleRecord> 
 export const updateRoleAction = async (
   id: string,
   dto: UpdateRoleDto,
-): Promise<RoleRecord> => {
-  const response = await apiClient.patch<RoleRecord>(
+): Promise<RoleIdResponse> => {
+  const response = await apiClient.patch<RoleIdResponse>(
     API_ENDPOINTS.ROLES.BY_ID(id),
     dto,
   );

@@ -1,8 +1,17 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import { BetaFeatureResponse, FeatureFlagRecord } from '../types/feature-flags.types';
+import type {
+  BetaFeatureResponse,
+  FeatureFlagListItemResponse,
+  FeatureFlagListResponse,
+  PublicFeatureFlagsResponse,
+  PublicFeatureFlags,
+} from '../types/feature-flags.types';
 
-export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
+export type { PublicFeatureFlags, PublicFeatureFlagsResponse };
+
+
+export const DEFAULT_FEATURE_FLAGS: FeatureFlagListItemResponse[] = [
   {
     id: 'ff-1',
     key: 'BETA_FEATURE',
@@ -68,17 +77,17 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagRecord[] = [
   },
 ];
 
-export const fetchFeatureFlagsAction = async (): Promise<FeatureFlagRecord[]> => {
+export const fetchFeatureFlagsAction = async (): Promise<FeatureFlagListItemResponse[]> => {
   try {
     const response = await apiClient.get<
-      FeatureFlagRecord[] | { data?: FeatureFlagRecord[]; flags?: FeatureFlagRecord[] }
+      FeatureFlagListItemResponse[] | FeatureFlagListResponse
     >(API_ENDPOINTS.FEATURE_FLAGS.BASE, { suppressToast: true });
 
     if (Array.isArray(response.data)) {
       return response.data;
     }
     if (response.data && typeof response.data === 'object') {
-      const wrapped = response.data as { data?: FeatureFlagRecord[]; flags?: FeatureFlagRecord[] };
+      const wrapped = response.data;
       if (Array.isArray(wrapped.data)) return wrapped.data;
       if (Array.isArray(wrapped.flags)) return wrapped.flags;
     }
@@ -91,16 +100,15 @@ export const fetchFeatureFlagsAction = async (): Promise<FeatureFlagRecord[]> =>
 export const toggleFeatureFlagAction = async (
   key: string,
   isEnabled: boolean
-): Promise<FeatureFlagRecord> => {
+): Promise<FeatureFlagListItemResponse> => {
   try {
-    const response = await apiClient.patch<FeatureFlagRecord>(
+    const response = await apiClient.patch<FeatureFlagListItemResponse>(
       API_ENDPOINTS.FEATURE_FLAGS.BY_KEY(key),
       { isEnabled },
       { suppressToast: true }
     );
     return response.data;
   } catch {
-    // Si el backend aún no expone PATCH /feature-flags/:key, devolvemos el estado actualizado
     return {
       id: `ff-${key}`,
       key,
@@ -121,14 +129,7 @@ export const fetchBetaFeatureAction = async (): Promise<BetaFeatureResponse> => 
   return response.data;
 };
 
-export interface PublicFeatureFlags {
-  oauth_social_login: boolean;
-  oauth_google: boolean;
-  oauth_facebook: boolean;
-  discord_bot?: boolean;
-}
-
-export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlags> => {
+export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlagsResponse> => {
   try {
     const response = await apiClient.get<Record<string, unknown>>(
       API_ENDPOINTS.FEATURE_FLAGS.PUBLIC,
@@ -155,4 +156,3 @@ export const fetchPublicFeatureFlagsAction = async (): Promise<PublicFeatureFlag
     };
   }
 };
-

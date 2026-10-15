@@ -1,25 +1,25 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
 import type {
-  DiscordBotStatus,
-  DiscordGuildInfo,
-  DiscordGuildQueue,
-  PlaybackActionPayload,
-  SendMessagePayload,
-  UpdateGuildConfigPayload,
+  DiscordBotStatusResponse,
+  DiscordGuildListItemResponse,
+  DiscordGuildQueueResponse,
+  PlaybackActionDto,
+  SendMessageDto,
+  UpdateGuildConfigDto,
   DiscordGuildConfig,
 } from '../types/discord-bot.types';
 
-export const fetchBotStatusAction = async (): Promise<DiscordBotStatus> => {
-  const response = await apiClient.get<DiscordBotStatus>(
+export const fetchBotStatusAction = async (): Promise<DiscordBotStatusResponse> => {
+  const response = await apiClient.get<DiscordBotStatusResponse>(
     API_ENDPOINTS.DISCORD_BOT.STATUS,
     { suppressToast: true }
   );
   return response.data;
 };
 
-export const fetchGuildsAction = async (): Promise<DiscordGuildInfo[]> => {
-  const response = await apiClient.get<DiscordGuildInfo[]>(
+export const fetchGuildsAction = async (): Promise<DiscordGuildListItemResponse[]> => {
+  const response = await apiClient.get<DiscordGuildListItemResponse[]>(
     API_ENDPOINTS.DISCORD_BOT.GUILDS,
     { suppressToast: true }
   );
@@ -28,8 +28,8 @@ export const fetchGuildsAction = async (): Promise<DiscordGuildInfo[]> => {
 
 export const fetchGuildQueueAction = async (
   guildId: string
-): Promise<DiscordGuildQueue> => {
-  const response = await apiClient.get<DiscordGuildQueue>(
+): Promise<DiscordGuildQueueResponse> => {
+  const response = await apiClient.get<DiscordGuildQueueResponse>(
     API_ENDPOINTS.DISCORD_BOT.QUEUE(guildId),
     { suppressToast: true }
   );
@@ -38,7 +38,7 @@ export const fetchGuildQueueAction = async (
 
 export const sendPlaybackAction = async (
   guildId: string,
-  payload: PlaybackActionPayload
+  payload: PlaybackActionDto
 ): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post<{ success: boolean; message: string }>(
     API_ENDPOINTS.DISCORD_BOT.PLAYBACK(guildId),
@@ -67,7 +67,7 @@ export const clearQueueAction = async (
 };
 
 export const sendChatMessageAction = async (
-  payload: SendMessagePayload
+  payload: SendMessageDto
 ): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post<{ success: boolean; message: string }>(
     API_ENDPOINTS.DISCORD_BOT.SEND_MESSAGE,
@@ -78,7 +78,7 @@ export const sendChatMessageAction = async (
 
 export const updateGuildConfigAction = async (
   guildId: string,
-  payload: UpdateGuildConfigPayload
+  payload: UpdateGuildConfigDto
 ): Promise<{ success: boolean; message: string; config: DiscordGuildConfig }> => {
   const response = await apiClient.patch<{
     success: boolean;
@@ -87,4 +87,3 @@ export const updateGuildConfigAction = async (
   }>(API_ENDPOINTS.DISCORD_BOT.UPDATE_CONFIG(guildId), payload);
   return response.data;
 };
-

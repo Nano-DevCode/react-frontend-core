@@ -1,10 +1,13 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import { PdfGeneratePayload, PdfGenerateResponse, PdfPreviewSyncPayload } from '../types/pdf.types';
-
+import type {
+  PdfGenerateDto,
+  PdfGenerateResponse,
+  PdfPreviewSyncDto,
+} from '../types/pdf.types';
 
 export const generatePdfAction = async (
-  payload: PdfGeneratePayload
+  payload: PdfGenerateDto
 ): Promise<PdfGenerateResponse> => {
   const response = await apiClient.post<PdfGenerateResponse>(
     API_ENDPOINTS.PDF.GENERATE,
@@ -14,7 +17,7 @@ export const generatePdfAction = async (
 };
 
 export const previewSyncPdfAction = async (
-  payload: PdfPreviewSyncPayload
+  payload: PdfPreviewSyncDto
 ): Promise<Blob> => {
   const response = await apiClient.post<Blob>(
     API_ENDPOINTS.PDF.PREVIEW_SYNC,
@@ -25,4 +28,3 @@ export const previewSyncPdfAction = async (
   );
   return new Blob([response.data], { type: 'application/pdf' });
 };
-

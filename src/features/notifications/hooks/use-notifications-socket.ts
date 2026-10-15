@@ -259,7 +259,7 @@ export const useNotificationsSocket = () => {
       });
 
       // 2. Sincronizar public-feature-flags si corresponde
-      queryClient.setQueryData<PublicFeatureFlags>(['public-feature-flags'], (old) => {
+      queryClient.setQueryData<PublicFeatureFlags>(['public-feature-flags'], (old: PublicFeatureFlags | undefined) => {
         if (!old) return old;
         const normalized = payload.key.toUpperCase();
         if (normalized === 'DISCORD_BOT_ENABLED' || normalized === 'DISCORD_BOT') {

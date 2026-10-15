@@ -1,18 +1,23 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/api/endpoints';
-import { AppNotification, MarkReadResponse, NotificationListResponse, NotificationQueryParams, UnreadCountResponse } from '../types/notification.types';
+import type {
+  NotificationListItemResponse,
+  MarkReadResponse,
+  NotificationListResponse,
+  NotificationQueryParams,
+  UnreadCountResponse,
+} from '../types/notification.types';
 
 export const fetchNotificationsAction = async (
   params?: NotificationQueryParams
-): Promise<AppNotification[]> => {
-  const response = await apiClient.get<AppNotification[] | NotificationListResponse>(
+): Promise<NotificationListItemResponse[]> => {
+  const response = await apiClient.get<NotificationListItemResponse[] | NotificationListResponse>(
     API_ENDPOINTS.NOTIFICATIONS.BASE,
     {
       params,
     }
   );
 
-  // Soporta tanto arreglo plano como objeto con clave `notifications`
   if (Array.isArray(response.data)) {
     return response.data;
   }
@@ -40,14 +45,13 @@ export const fetchUnreadCountAction = async (): Promise<number> => {
 
 export const markNotificationAsReadAction = async (
   id: string
-): Promise<AppNotification | null> => {
+): Promise<NotificationListItemResponse | null> => {
   const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(id);
   try {
-    const response = await apiClient.patch<AppNotification>(endpoint);
+    const response = await apiClient.patch<NotificationListItemResponse>(endpoint);
     return response.data;
   } catch {
-    // Si el backend prefiere POST en lugar de PATCH
-    const fallbackResponse = await apiClient.post<AppNotification>(endpoint);
+    const fallbackResponse = await apiClient.post<NotificationListItemResponse>(endpoint);
     return fallbackResponse.data;
   }
 };
@@ -62,4 +66,3 @@ export const markAllNotificationsAsReadAction = async (): Promise<MarkReadRespon
     return fallbackResponse.data;
   }
 };
-
