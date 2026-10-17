@@ -20,7 +20,12 @@ const authClient = axios.create({
 // Promesa compartida para el patrón Single-Flight.
 // Si múltiples peticiones solicitan un refresco concurrente, todas reutilizan esta misma promesa.
 let refreshPromise: Promise<string> | null = null;
+let lastRefreshTimestamp = 0;
 let isTerminatingSession = false;
+
+// Ventana de enfriamiento para evitar que StrictMode o eventos simultáneos (focus + visibilitychange)
+// disparen rotaciones duplicadas del refresh_token en menos de 5 segundos.
+const REFRESH_DEDUP_WINDOW_MS = 5_000;
 
 /**
  * Cierra la sesión de forma controlada y elegante ante expiración definitiva del refresh token
@@ -55,14 +60,25 @@ export const terminateSession = (
 };
 
 /**
- * Ejecuta la renovación transparente del token de acceso (Single-Flight).
- * Si ya hay un refresco en curso, devuelve la misma promesa para evitar duplicidad
- * y rotación criptográfica destructiva en el backend de NestJS.
+ * Ejecuta la renovación transparente del token de acceso (Single-Flight + Cooldown).
+ * Si ya hay un refresco en curso o se acaba de refrescar hace instantes, devuelve el token
+ * vigente para evitar rotación criptográfica destructiva en el backend de NestJS.
  */
-export const refreshAuthSession = async (): Promise<string> => {
-  // Si ya existe una petición de refresco en curso, reusarla
+export const refreshAuthSession = async (force = false): Promise<string> => {
+  // 1. Si ya existe una petición de refresco en vuelo, reutilizarla
   if (refreshPromise) {
     return refreshPromise;
+  }
+
+  // 2. Si hace menos de 5s ya se renovó el token exitosamente y sigue vigente, reutilizarlo
+  const currentState = useAuthStore.getState();
+  if (
+    !force &&
+    currentState.accessToken &&
+    Date.now() - lastRefreshTimestamp < REFRESH_DEDUP_WINDOW_MS &&
+    !isTokenExpired(currentState.accessToken, 120)
+  ) {
+    return currentState.accessToken;
   }
 
   const currentPromise = (async (): Promise<string> => {
@@ -77,15 +93,17 @@ export const refreshAuthSession = async (): Promise<string> => {
         throw new Error('El backend no retornó un accessToken en /auth/refresh');
       }
 
-      // Actualización atómica en Zustand
-      useAuthStore.getState().setAuth(user, accessToken);
+      lastRefreshTimestamp = Date.now();
+
+      // Actualización atómica en Zustand (conservando datos de usuario si el backend solo envía accessToken)
+      useAuthStore.getState().setAuth(user ?? useAuthStore.getState().user, accessToken);
 
       return accessToken;
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
 
       // Únicamente si el backend confirma 401 o 403 Y el token de acceso actual ya está vencido,
-      // terminamos la sesión. Si el token actual todavía es válido, permitimos que el usuario continúe.
+      // terminamos la sesión. Errores de red o 429 NUNCA cierran la sesión del usuario.
       if (status === 401 || status === 403) {
         const currentToken = useAuthStore.getState().accessToken;
         if (isTokenExpired(currentToken, 0)) {
@@ -110,7 +128,7 @@ export const refreshAuthSession = async (): Promise<string> => {
  */
 export const syncUserSession = async (): Promise<void> => {
   try {
-    await refreshAuthSession();
+    await refreshAuthSession(true);
   } catch (err) {
     console.warn('Advertencia: No se pudo resincronizar la sesión con el backend:', err);
     throw err;

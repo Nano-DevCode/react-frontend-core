@@ -21,7 +21,9 @@ export const Sidebar = () => {
 
   const userRoles = user?.roles || ['user'];
   const hasAccess = (roles: string[]) =>
-    roles.some((r) => userRoles.includes(r)) || userRoles.includes('admin');
+    roles.some((r) => userRoles.includes(r)) ||
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin');
 
   const isFlagEnabled = (flagKey?: string) => {
     if (!flagKey) return true;
@@ -85,11 +87,15 @@ export const Sidebar = () => {
           {navigationItems.map((item) => {
             if (!hasAccess(item.roles) || !isFlagEnabled(item.featureFlag)) return null;
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
             const linkContent = (
               <NavLink
                 to={item.path}
+                end={item.path === '/'}
                 className={cn(
                   'flex items-center rounded-xl text-sm font-medium transition-all duration-200 relative group select-none',
                   isSidebarCollapsed ? 'h-10 w-10 mx-auto justify-center p-0' : 'px-3 py-2.5 gap-3',

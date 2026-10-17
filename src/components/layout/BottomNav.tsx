@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 export const BottomNav = () => {
   const user = useAuthStore((state) => state.user);
   const userRoles = user?.roles || [];
-  const isAdmin = userRoles.includes('admin');
+  const isAdmin = userRoles.includes('admin') || userRoles.includes('superadmin');
 
   const navItems = [
     { title: 'Inicio', path: '/', icon: LayoutDashboard },
@@ -30,6 +30,7 @@ export const BottomNav = () => {
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === '/'}
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 transition-all duration-150 text-[11px] font-medium select-none',

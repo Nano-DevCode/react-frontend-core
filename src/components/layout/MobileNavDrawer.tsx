@@ -23,7 +23,9 @@ export const MobileNavDrawer = ({ open, onOpenChange }: MobileNavDrawerProps) =>
   const { data: flags = [] } = useFeatureFlagsQuery();
 
   const hasAccess = (roles: string[]) =>
-    roles.some((r) => userRoles.includes(r)) || userRoles.includes('admin');
+    roles.some((r) => userRoles.includes(r)) ||
+    userRoles.includes('admin') ||
+    userRoles.includes('superadmin');
 
   const isFlagEnabled = (flagKey?: string) => {
     if (!flagKey) return true;
@@ -52,6 +54,7 @@ export const MobileNavDrawer = ({ open, onOpenChange }: MobileNavDrawerProps) =>
               <NavLink
                 key={item.path}
                 to={item.path}
+                end={item.path === '/'}
                 onClick={() => onOpenChange(false)}
                 className={({ isActive }) =>
                   cn(

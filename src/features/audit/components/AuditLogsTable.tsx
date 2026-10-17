@@ -25,7 +25,7 @@ export const AuditLogsTable = ({ logs, onSelectLog }: AuditLogsTableProps) => {
 
   return (
     <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm notranslate">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-muted/60 border-b border-border/60 text-muted-foreground">
             <tr>

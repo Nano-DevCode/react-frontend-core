@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
-import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { useLoginMutation } from '../hooks/use-auth';
 import { AuthHeroBanner } from './AuthHeroBanner';
 import { TwoFactorChallengeModal } from '@/features/two-factor/components/TwoFactorChallengeModal';
@@ -25,6 +24,24 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+/**
+ * Valida que la ruta de redirección sea estrictamente interna para prevenir ataques Open Redirect.
+ */
+const getSafeRedirectPath = (candidate?: string | null): string => {
+  if (!candidate || typeof candidate !== 'string') return '/';
+  const trimmed = candidate.trim();
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    trimmed.startsWith('/login') ||
+    trimmed.startsWith('/register')
+  ) {
+    return '/';
+  }
+  return trimmed;
+};
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [challengeTempToken, setChallengeTempToken] = useState<string | null>(null);
@@ -34,7 +51,31 @@ export default function LoginPage() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+
+  const from = useMemo(() => {
+    const queryFrom = new URLSearchParams(location.search).get('from');
+    const stateFrom = (location.state as { from?: { pathname?: string; search?: string } } | null)
+      ?.from;
+    const stateCandidate = stateFrom?.pathname
+      ? `${stateFrom.pathname}${stateFrom.search || ''}`
+      : null;
+    return getSafeRedirectPath(stateCandidate || queryFrom);
+  }, [location.search, location.state]);
+
+  // Temporizador limpio para Rate Limit (HTTP 429) sin fugas de memoria al desmontar
+  useEffect(() => {
+    if (rateLimitTimer === null) return;
+    if (rateLimitTimer <= 0) {
+      setRateLimitTimer(null);
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      setRateLimitTimer((prev) => (prev !== null && prev > 1 ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [rateLimitTimer]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -72,11 +113,10 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
-      trustDevice: false,
+      trustDevice: true,
     },
   });
 
-  const passwordValue = watch('password');
   const trustDeviceValue = watch('trustDevice');
 
   const { mutate: login, isPending } = useLoginMutation();
@@ -94,15 +134,6 @@ export default function LoginPage() {
         const status = (err as { response?: { status?: number } })?.response?.status;
         if (status === 429) {
           setRateLimitTimer(60);
-          const interval = setInterval(() => {
-            setRateLimitTimer((prev) => {
-              if (!prev || prev <= 1) {
-                clearInterval(interval);
-                return null;
-              }
-              return prev - 1;
-            });
-          }, 1000);
         }
       },
     });
@@ -159,6 +190,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
                     placeholder="usuario@empresa.com"
                     className="pl-9 h-10 text-xs focus-visible:ring-2 focus-visible:ring-primary/30"
                     disabled={isPending || rateLimitTimer !== null}
@@ -172,22 +204,23 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Campo Contraseña con visor y Medidor de Fuerza */}
+              {/* Campo Contraseña con visor */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="password" className="text-xs font-semibold">
                     <span>Contraseña</span>
                   </Label>
-                  <Link
-                    to="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      alert('Por favor contacta al administrador del sistema para restablecer tu acceso.');
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast.info(
+                        'Por favor contacta al administrador del sistema para restablecer tu acceso.',
+                      );
                     }}
-                    className="text-[11px] text-primary hover:underline"
+                    className="text-[11px] text-primary hover:underline cursor-pointer"
                   >
                     <span>¿Olvidaste tu contraseña?</span>
-                  </Link>
+                  </button>
                 </div>
 
                 <div className="relative">
@@ -195,6 +228,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     placeholder="••••••••••••"
                     className="pl-9 pr-9 h-10 text-xs focus-visible:ring-2 focus-visible:ring-primary/30"
                     disabled={isPending || rateLimitTimer !== null}
@@ -215,19 +249,16 @@ export default function LoginPage() {
                     <span>{errors.password.message}</span>
                   </span>
                 )}
-
-                {/* Medidor de Fuerza */}
-                <PasswordStrengthMeter password={passwordValue} />
               </div>
 
               {/* Switch Recordar este dispositivo */}
               <div className="flex items-center justify-between pt-1">
                 <div className="space-y-0.5">
                   <Label htmlFor="trustDevice" className="text-xs cursor-pointer">
-                    <span>Recordar este equipo</span>
+                    <span>Mantener sesión iniciada (30 días)</span>
                   </Label>
                   <p className="text-[10px] text-muted-foreground">
-                    <span>Mantiene la confianza del dispositivo por 30 días</span>
+                    <span>Recuerda este equipo para no pedir 2FA ni cerrar sesión por 30 días</span>
                   </p>
                 </div>
                 <Switch

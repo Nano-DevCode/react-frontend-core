@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -42,6 +42,7 @@ export default function EditUserPage() {
     return AVAILABLE_ROLES;
   }, [rolesResponse]);
 
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -51,20 +52,17 @@ export default function EditUserPage() {
   const [isActive, setIsActive] = useState(true);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email || '');
-      setPassword('');
-      setFirstName(user.profile?.firstName || '');
-      setFirstLastName(user.profile?.firstLastName || '');
-      setSecondLastName(user.profile?.secondLastName || '');
-
-
-      setBio(user.profile?.bio || '');
-      setIsActive(user.isActive ?? true);
-      setSelectedRoles(user.roles?.map((r) => r.role.name) || ['user']);
-    }
-  }, [user]);
+  if (user && syncedUserId !== user.id) {
+    setSyncedUserId(user.id);
+    setEmail(user.email || '');
+    setPassword('');
+    setFirstName(user.profile?.firstName || '');
+    setFirstLastName(user.profile?.firstLastName || '');
+    setSecondLastName(user.profile?.secondLastName || '');
+    setBio(user.profile?.bio || '');
+    setIsActive(user.isActive ?? true);
+    setSelectedRoles(user.roles?.map((r) => r.role.name) || ['user']);
+  }
 
   const fullName = [firstName.trim(), firstLastName.trim(), secondLastName.trim()]
     .filter(Boolean)

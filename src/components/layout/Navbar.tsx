@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Menu, LogOut, ShieldCheck, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { Button } from '@/components/ui/button';
@@ -24,19 +25,39 @@ interface NavbarProps {
 const pageTitles: Record<string, string> = {
   '/': 'Panel de Control',
   '/usuarios': 'Directorio de Usuarios & RBAC',
+  '/usuarios/crear': 'Registrar Nuevo Usuario',
+  '/roles': 'Roles & Permisos (RBAC)',
+  '/roles/crear': 'Crear Nuevo Rol',
   '/archivos': 'Gestor de Archivos S3 / SeaweedFS',
   '/auditoria': 'Trazabilidad y Auditoría',
   '/salud': 'Observabilidad del Sistema',
   '/seguridad-2fa': 'Doble Factor de Autenticación (2FA)',
   '/feature-flags': 'Gestión de Feature Flags',
+  '/admin/logs': 'Logs del Servidor',
+  '/admin/discord-bot': 'Consola de Bot de Música Discord',
+};
+
+const resolvePageTitle = (pathname: string): string => {
+  if (pageTitles[pathname]) return pageTitles[pathname];
+  if (pathname.startsWith('/usuarios/') && pathname.endsWith('/editar')) {
+    return 'Editar Usuario';
+  }
+  if (pathname.startsWith('/usuarios/')) {
+    return 'Expediente de Usuario';
+  }
+  if (pathname.startsWith('/roles/') && pathname.endsWith('/editar')) {
+    return 'Configurar Rol y Permisos';
+  }
+  return 'Plataforma';
 };
 
 export const Navbar = ({ onOpenMobileMenu }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
 
-  const currentTitle = pageTitles[location.pathname] || 'Plataforma';
+  const currentTitle = resolvePageTitle(location.pathname);
 
   const handleLogout = async () => {
     try {
@@ -45,7 +66,8 @@ export const Navbar = ({ onOpenMobileMenu }: NavbarProps) => {
       // Ignorar error de red en logout
     } finally {
       logout();
-      navigate('/login');
+      queryClient.clear();
+      navigate('/login', { replace: true });
     }
   };
 

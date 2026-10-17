@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,9 @@ export const EditUserDialog = ({
 }: EditUserDialogProps) => {
   const { data: detailData } = useUserDetailQuery(open && user ? user.id : null);
   const activeUser = detailData || user;
+  const syncKey = activeUser ? `${activeUser.id}:${detailData ? 'detail' : 'summary'}` : null;
 
+  const [syncedKey, setSyncedKey] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -47,20 +49,17 @@ export const EditUserDialog = ({
 
   const { mutate: updateUser, isPending } = useUpdateUserMutation();
 
-  useEffect(() => {
-    if (activeUser) {
-      setEmail(activeUser.email || '');
-      setPassword('');
-      setFirstName(activeUser.profile?.firstName || '');
-      setFirstLastName(activeUser.profile?.firstLastName || '');
-      setSecondLastName(activeUser.profile?.secondLastName || '');
-
-
-      setBio(activeUser.profile?.bio || '');
-      setIsActive(activeUser.isActive ?? true);
-      setSelectedRoles(activeUser.roles?.map((r) => r.role.name) || ['user']);
-    }
-  }, [activeUser]);
+  if (activeUser && syncKey !== syncedKey) {
+    setSyncedKey(syncKey);
+    setEmail(activeUser.email || '');
+    setPassword('');
+    setFirstName(activeUser.profile?.firstName || '');
+    setFirstLastName(activeUser.profile?.firstLastName || '');
+    setSecondLastName(activeUser.profile?.secondLastName || '');
+    setBio(activeUser.profile?.bio || '');
+    setIsActive(activeUser.isActive ?? true);
+    setSelectedRoles(activeUser.roles?.map((r) => r.role.name) || ['user']);
+  }
 
   const fullName = [firstName.trim(), firstLastName.trim(), secondLastName.trim()]
     .filter(Boolean)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -39,6 +39,7 @@ export default function EditRolePage() {
 
   const isSystemRole = Boolean(role?.isSystem);
 
+  const [syncedRoleId, setSyncedRoleId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<number>(10);
@@ -46,14 +47,13 @@ export default function EditRolePage() {
   const [permissionFilter, setPermissionFilter] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (role) {
-      setName(role.name);
-      setDescription(role.description || '');
-      setPriority(role.priority);
-      setSelectedPermissionIds(role.permissions.map((p) => p.id));
-    }
-  }, [role]);
+  if (role && syncedRoleId !== role.id) {
+    setSyncedRoleId(role.id);
+    setName(role.name);
+    setDescription(role.description || '');
+    setPriority(role.priority);
+    setSelectedPermissionIds(role.permissions.map((p) => p.id));
+  }
 
   const filteredPermissions = useMemo(() => {
     const q = permissionFilter.trim().toLowerCase();

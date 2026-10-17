@@ -43,15 +43,16 @@ export default function App() {
 
       try {
         await refreshAuthSession();
-      } catch {
-        // Si no hay cookies de refresco o falla, y el token actual está expirado o ausente
-        if (isMounted && (!isAuthenticated || isTokenExpired(accessToken, 0))) {
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        // Solo cerrar sesión si el backend confirma explícitamente 401/403 o si no había sesión previa
+        if (isMounted && (!isAuthenticated || status === 401 || status === 403)) {
           logout();
         }
       } finally {
-        setTimeout(() => {
-          if (isMounted) setIsInitializing(false);
-        }, 400);
+        if (isMounted) {
+          setIsInitializing(false);
+        }
       }
     };
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   useReactTable,
@@ -8,7 +8,6 @@ import {
   type SortingState,
   flexRender,
 } from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { toast } from 'sonner';
 import { useUsersTableColumns } from './use-users-table-columns';
 import { UsersTableToolbar } from './UsersTableToolbar';
@@ -73,16 +72,7 @@ export const UsersTable = ({ users }: UsersTableProps) => {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // TanStack Virtual para listas de alto rendimiento (60 FPS)
-  const tableContainerRef = useRef<HTMLDivElement>(null);
   const { rows } = table.getRowModel();
-
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 56,
-    overscan: 10,
-  });
 
   const handleExportCSV = () => {
     exportUsers(undefined, {
@@ -120,20 +110,17 @@ export const UsersTable = ({ users }: UsersTableProps) => {
         isExporting={isExporting}
       />
 
-      {/* Tabla Virtualizada */}
+      {/* Tabla Paginada sin Scroll Vertical Interno */}
       <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
-        <div
-          ref={tableContainerRef}
-          className="relative max-h-[580px] overflow-auto scrollbar-thin"
-        >
+        <div className="relative w-full overflow-x-auto no-scrollbar">
           <table className="w-full caption-bottom text-sm border-collapse">
-            <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur-md border-b border-border/60 shadow-xs">
+            <thead className="bg-muted/60 border-b border-border/60">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground"
+                      className="h-11 px-4 text-left align-middle text-xs font-semibold text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -146,7 +133,7 @@ export const UsersTable = ({ users }: UsersTableProps) => {
                 </tr>
               ))}
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border/30">
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length} className="p-8">
@@ -157,49 +144,21 @@ export const UsersTable = ({ users }: UsersTableProps) => {
                   </td>
                 </tr>
               ) : (
-                <>
-                  {/* Padding virtual superior */}
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <tr style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }}>
-                      <td colSpan={columns.length} />
-                    </tr>
-                  )}
-
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const row = rows[virtualRow.index];
-                    return (
-                      <tr
-                        key={row.id}
-                        className="border-b border-border/30 transition-colors hover:bg-muted/40 h-14"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-4 py-2.5 align-middle text-xs">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-
-                  {/* Padding virtual inferior */}
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <tr
-                      style={{
-                        height: `${
-                          rowVirtualizer.getTotalSize() -
-                          rowVirtualizer.getVirtualItems()[
-                            rowVirtualizer.getVirtualItems().length - 1
-                          ].end
-                        }px`,
-                      }}
-                    >
-                      <td colSpan={columns.length} />
-                    </tr>
-                  )}
-                </>
+                rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="transition-colors hover:bg-muted/40 h-14"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 py-2.5 align-middle text-xs">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -208,10 +167,10 @@ export const UsersTable = ({ users }: UsersTableProps) => {
 
       <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
         <span>
-          <span>Total mostrado:</span> <strong><span>{filteredUsers.length}</span></strong> <span>de</span> <strong><span>{users.length}</span></strong> <span>usuarios</span>
+          <span>Total mostrado en página:</span> <strong><span>{filteredUsers.length}</span></strong> <span>de</span> <strong><span>{users.length}</span></strong> <span>usuarios</span>
         </span>
         <span className="text-[11px] font-mono">
-          <span>TanStack Table v8 + Virtualizer (60 FPS)</span>
+          <span>TanStack Table v8 + TanStack Query</span>
         </span>
       </div>
 

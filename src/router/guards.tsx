@@ -33,6 +33,7 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
 
   const hasAccess =
     userRoles.includes('admin') ||
+    userRoles.includes('superadmin') ||
     allowedRoles.some((role) => userRoles.includes(role));
 
   if (!hasAccess) {
