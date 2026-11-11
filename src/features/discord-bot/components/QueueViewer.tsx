@@ -7,13 +7,21 @@ import {
   History,
   Music2,
   ExternalLink,
+  Play,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { DiscordGuildInfo, DiscordGuildQueue } from '../types/discord-bot.types';
+import type {
+  DiscordGuildInfo,
+  DiscordGuildQueue,
+  AudioTrackItem,
+} from '../types/discord-bot.types';
 import {
   useRemoveTrackMutation,
   useClearQueueMutation,
+  usePlaybackMutation,
+  useLocalMusicHistory,
+  MAX_HISTORY_ITEMS,
 } from '../hooks/use-discord-bot';
 
 interface QueueViewerProps {
@@ -30,19 +38,42 @@ function formatTime(millis: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-export const QueueViewer = ({ guild, queue, isLoading: _isLoading }: QueueViewerProps) => {
+export const QueueViewer = ({
+  guild,
+  queue,
+  isLoading: _isLoading,
+}: QueueViewerProps) => {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming');
 
   const removeTrackMutation = useRemoveTrackMutation(guild.id);
   const clearQueueMutation = useClearQueueMutation(guild.id);
+  const playbackMutation = usePlaybackMutation(guild.id);
+
+  const { history, clearLocalHistory } = useLocalMusicHistory(
+    guild.id,
+    queue?.currentTrack,
+    queue?.history,
+  );
 
   const tracks = queue?.tracks || [];
-  const history = queue?.history || [];
 
   const totalDuration = tracks.reduce(
     (acc, item) => acc + (item.info.length || 0),
-    0
+    0,
   );
+
+  const handleReplayFromHistory = (track: AudioTrackItem) => {
+    const voiceChannelId =
+      guild.userSession?.voiceChannelId || guild.voiceChannels[0]?.id;
+    const query =
+      track.info.uri || `${track.info.title} ${track.info.author}`.trim();
+
+    playbackMutation.mutate({
+      action: 'play',
+      query,
+      voiceChannelId,
+    });
+  };
 
   return (
     <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 shadow-sm space-y-4">
@@ -77,7 +108,7 @@ export const QueueViewer = ({ guild, queue, isLoading: _isLoading }: QueueViewer
               }`}
             >
               <History className="h-4 w-4" />
-              <span>Historial</span>
+              <span>Historial (Máx {MAX_HISTORY_ITEMS})</span>
               <Badge
                 variant={activeTab === 'history' ? 'outline' : 'secondary'}
                 className="text-[10px] px-1.5 py-0 h-4 border-white/20"
@@ -106,6 +137,20 @@ export const QueueViewer = ({ guild, queue, isLoading: _isLoading }: QueueViewer
             </Button>
           </div>
         )}
+
+        {activeTab === 'history' && history.length > 0 && (
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearLocalHistory}
+              className="text-xs text-destructive hover:bg-destructive/10 hover:border-destructive/40 h-8 gap-1.5"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Limpiar historial local</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -115,7 +160,11 @@ export const QueueViewer = ({ guild, queue, isLoading: _isLoading }: QueueViewer
             <Music2 className="h-10 w-10 mx-auto opacity-30 stroke-1" />
             <p className="text-sm font-medium">La cola de reproducción está vacía</p>
             <p className="text-xs opacity-75 max-w-sm mx-auto">
-              Añade canciones desde el buscador de arriba o interactúa en Discord usando el comando <code className="bg-muted px-1.5 py-0.5 rounded text-primary font-mono">/play</code>.
+              Añade canciones desde el buscador de arriba o interactúa en Discord usando el comando{' '}
+              <code className="bg-muted px-1.5 py-0.5 rounded text-primary font-mono">
+                /play
+              </code>
+              .
             </p>
           </div>
         ) : (
@@ -186,51 +235,77 @@ export const QueueViewer = ({ guild, queue, isLoading: _isLoading }: QueueViewer
             ))}
           </div>
         )
+      ) : /* History Tab (Últimas 10 canciones en localStorage + servidor) */
+      history.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground space-y-2">
+          <History className="h-10 w-10 mx-auto opacity-30 stroke-1" />
+          <p className="text-sm font-medium">Sin historial previo de reproducción</p>
+          <p className="text-xs opacity-75">
+            Las últimas {MAX_HISTORY_ITEMS} pistas reproducidas se guardan automáticamente de forma segura en tu navegador para re-reproducción rápida.
+          </p>
+        </div>
       ) : (
-        /* History Tab */
-        history.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground space-y-2">
-            <History className="h-10 w-10 mx-auto opacity-30 stroke-1" />
-            <p className="text-sm font-medium">Sin historial previo de reproducción</p>
-            <p className="text-xs opacity-75">
-              Las pistas reproducidas en esta sesión se listarán aquí para consulta o re-inserción rápida.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/40 max-h-[380px] overflow-y-auto pr-1 space-y-1 scrollbar-thin">
-            {history.map((track, idx) => (
-              <div
-                key={`history-${track.encoded}-${idx}`}
-                className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-muted/50 transition-colors"
-              >
-                <div className="relative h-9 w-9 shrink-0 rounded-lg overflow-hidden bg-muted/80 border border-border/60 flex items-center justify-center">
-                  {track.info.artworkUrl ? (
-                    <img
-                      src={track.info.artworkUrl}
-                      alt={track.info.title}
-                      className="h-full w-full object-cover opacity-80"
-                    />
-                  ) : (
-                    <Music2 className="h-4 w-4 text-muted-foreground/60" />
-                  )}
-                </div>
+        <div className="divide-y divide-border/40 max-h-[380px] overflow-y-auto pr-1 space-y-1 scrollbar-thin">
+          {history.map((track, idx) => (
+            <div
+              key={`history-${track.encoded}-${idx}`}
+              className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-muted/50 transition-colors group"
+            >
+              <span className="text-xs font-mono text-muted-foreground w-5 text-center shrink-0">
+                #{idx + 1}
+              </span>
 
-                <div className="flex-1 min-w-0">
+              <div className="relative h-9 w-9 shrink-0 rounded-lg overflow-hidden bg-muted/80 border border-border/60 flex items-center justify-center">
+                {track.info.artworkUrl ? (
+                  <img
+                    src={track.info.artworkUrl}
+                    alt={track.info.title}
+                    className="h-full w-full object-cover opacity-90"
+                  />
+                ) : (
+                  <Music2 className="h-4 w-4 text-muted-foreground/60" />
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
                   <h4 className="text-xs font-medium text-foreground truncate">
                     {track.info.title}
                   </h4>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {track.info.author}
-                  </p>
+                  {track.info.uri && (
+                    <a
+                      href={track.info.uri}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity shrink-0"
+                      title="Abrir enlace original"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                 </div>
-
-                <span className="text-xs font-mono text-muted-foreground shrink-0">
-                  {formatTime(track.info.length)}
-                </span>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {track.info.author}
+                </p>
               </div>
-            ))}
-          </div>
-        )
+
+              <span className="text-xs font-mono text-muted-foreground shrink-0">
+                {formatTime(track.info.length)}
+              </span>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleReplayFromHistory(track)}
+                disabled={playbackMutation.isPending}
+                className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg shrink-0"
+                title="Reproducir de nuevo (enviar a la cola actual)"
+              >
+                <Play className="h-3.5 w-3.5 fill-current" />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

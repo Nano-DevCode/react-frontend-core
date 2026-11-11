@@ -1,5 +1,5 @@
 // ============================================================================
-// CONTRATOS DE DISCORD BOT (/discord-bot)
+// CONTRATOS DE DISCORD BOT & LAVALINK + TWITCH (/discord)
 // ============================================================================
 
 export interface AudioTrackInfo {
@@ -41,12 +41,40 @@ export interface DiscordGuildConfig {
   guildId: string;
   dedicatedChannelId?: string | null;
   defaultVolume: number;
-  commandPrefix: string;
-  djRoleIds: string[];
-  autoLeaveOnEmpty: boolean;
-  twentyFourSeven: boolean;
+  commandPrefix?: string;
+  prefix?: string;
+  djRoleIds?: string[];
+  autoLeaveOnEmpty?: boolean;
+  twentyFourSeven?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserLavalinkRegistration {
+  userId: string;
+  guildId: string;
+  guildName?: string | null;
+  voiceChannelId?: string | null;
+  discordUserId?: string | null;
+  nodeName: string;
+  registeredAt: string;
+}
+
+export interface LavalinkNodeStatus {
+  name: string;
+  state: number;
+  connected: boolean;
+  players: number;
+  playingPlayers: number;
+}
+
+export interface TwitchChannelLink {
+  userId: string;
+  twitchChannel: string;
+  twitchUserId?: string;
+  guildId: string;
+  voiceChannelId: string;
+  linkedAt: string;
 }
 
 /**
@@ -63,6 +91,8 @@ export interface DiscordGuildBase {
  * Representación de un servidor en listados de Discord (DiscordGuildListItemResponse)
  */
 export interface DiscordGuildListItemResponse extends DiscordGuildBase {
+  isRegistered?: boolean;
+  userSession?: UserLavalinkRegistration | null;
   hasActiveQueue: boolean;
   currentTrack: AudioTrackInfo | null;
   voiceChannels: DiscordVoiceChannel[];
@@ -70,14 +100,7 @@ export interface DiscordGuildListItemResponse extends DiscordGuildBase {
   config: DiscordGuildConfig | null;
 }
 
-/**
- * Representación detallada de un servidor de Discord por su ID (DiscordGuildIdResponse)
- */
 export type DiscordGuildIdResponse = DiscordGuildListItemResponse;
-
-/**
- * Lista de servidores de Discord
- */
 export type DiscordGuildListResponse = DiscordGuildListItemResponse[];
 
 /**
@@ -87,8 +110,11 @@ export interface DiscordBotStatusResponse {
   isEnabled: boolean;
   isDiscordConnected: boolean;
   isLavalinkConnected: boolean;
+  lavalinkNodes?: LavalinkNodeStatus[];
   guildCount: number;
   activeQueuesCount: number;
+  inviteUrl?: string | null;
+  myRegistrations?: UserLavalinkRegistration[];
   user: {
     id: string;
     tag: string;
@@ -127,6 +153,18 @@ export interface PlaybackActionDto {
   query?: string;
   voiceChannelId?: string;
   value?: number;
+}
+
+export interface RegisterLavalinkDto {
+  guildId: string;
+  voiceChannelId?: string;
+  discordUserId?: string;
+}
+
+export interface LinkTwitchChannelDto {
+  twitchChannel: string;
+  guildId: string;
+  voiceChannelId?: string;
 }
 
 /**

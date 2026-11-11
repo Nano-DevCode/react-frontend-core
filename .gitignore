@@ -79,3 +79,8 @@ $RECYCLE.BIN/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Backups & Build
+build/
+*.sql
+

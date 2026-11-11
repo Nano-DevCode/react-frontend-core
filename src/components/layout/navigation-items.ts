@@ -1,4 +1,4 @@
-import {
+﻿import {
   Users,
   HardDrive,
   Activity,
@@ -46,7 +46,8 @@ export const navigationItems: NavigationItem[] = [
     title: 'Archivos S3',
     path: '/archivos',
     icon: HardDrive,
-    roles: ['admin', 'user'],
+    roles: ['admin'],
+    badge: 'Admin',
   },
   {
     title: 'Auditoría & Logs',
@@ -58,7 +59,8 @@ export const navigationItems: NavigationItem[] = [
     title: 'Salud del Sistema',
     path: '/salud',
     icon: ShieldAlert,
-    roles: ['admin', 'user', 'auditor'],
+    roles: ['admin', 'auditor'],
+    badge: 'Admin',
   },
   {
     title: 'Seguridad 2FA',
@@ -84,9 +86,8 @@ export const navigationItems: NavigationItem[] = [
     title: 'Bot Discord',
     path: '/admin/discord-bot',
     icon: Headphones,
-    roles: ['admin'],
-    badge: 'Bot',
+    roles: ['admin', 'user', 'auditor'],
+    badge: 'Music',
     featureFlag: 'DISCORD_BOT_ENABLED',
   },
 ];
-

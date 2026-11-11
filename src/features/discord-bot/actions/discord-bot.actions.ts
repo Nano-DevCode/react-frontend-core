@@ -8,6 +8,10 @@ import type {
   SendMessageDto,
   UpdateGuildConfigDto,
   DiscordGuildConfig,
+  RegisterLavalinkDto,
+  UserLavalinkRegistration,
+  LinkTwitchChannelDto,
+  TwitchChannelLink,
 } from '../types/discord-bot.types';
 
 export const fetchBotStatusAction = async (): Promise<DiscordBotStatusResponse> => {
@@ -85,5 +89,66 @@ export const updateGuildConfigAction = async (
     message: string;
     config: DiscordGuildConfig;
   }>(API_ENDPOINTS.DISCORD_BOT.UPDATE_CONFIG(guildId), payload);
+  return response.data;
+};
+
+export const registerLavalinkSessionAction = async (
+  payload: RegisterLavalinkDto
+): Promise<{
+  success: boolean;
+  message: string;
+  registration: UserLavalinkRegistration;
+}> => {
+  const response = await apiClient.post<{
+    success: boolean;
+    message: string;
+    registration: UserLavalinkRegistration;
+  }>(API_ENDPOINTS.DISCORD_BOT.LAVALINK_REGISTER, payload);
+  return response.data;
+};
+
+export const unregisterLavalinkSessionAction = async (
+  guildId: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await apiClient.delete<{ success: boolean; message: string }>(
+    API_ENDPOINTS.DISCORD_BOT.LAVALINK_UNREGISTER(guildId)
+  );
+  return response.data;
+};
+
+export const fetchMyTwitchLinksAction = async (): Promise<{
+  userId: string;
+  links: TwitchChannelLink[];
+}> => {
+  const response = await apiClient.get<{
+    userId: string;
+    links: TwitchChannelLink[];
+  }>(API_ENDPOINTS.DISCORD_BOT.TWITCH_ME, { suppressToast: true });
+  return response.data;
+};
+
+export const linkTwitchChannelAction = async (
+  payload: LinkTwitchChannelDto
+): Promise<{
+  success: boolean;
+  message: string;
+  link: TwitchChannelLink;
+}> => {
+  const response = await apiClient.post<{
+    success: boolean;
+    message: string;
+    link: TwitchChannelLink;
+  }>(API_ENDPOINTS.DISCORD_BOT.TWITCH_LINK, payload);
+  return response.data;
+};
+
+export const unlinkTwitchChannelAction = async (
+  channel: string
+): Promise<{ success: boolean; removed: boolean; channel: string }> => {
+  const response = await apiClient.delete<{
+    success: boolean;
+    removed: boolean;
+    channel: string;
+  }>(API_ENDPOINTS.DISCORD_BOT.TWITCH_UNLINK(channel));
   return response.data;
 };

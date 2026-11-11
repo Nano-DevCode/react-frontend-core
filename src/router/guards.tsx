@@ -29,12 +29,12 @@ interface RoleGuardProps {
 
 export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
   const user = useAuthStore((state) => state.user);
-  const userRoles = user?.roles || [];
+  const userRoles = (user?.roles || []).map((r) => r.toLowerCase());
 
   const hasAccess =
     userRoles.includes('admin') ||
     userRoles.includes('superadmin') ||
-    allowedRoles.some((role) => userRoles.includes(role));
+    allowedRoles.some((role) => userRoles.includes(role.toLowerCase()));
 
   if (!hasAccess) {
     return (

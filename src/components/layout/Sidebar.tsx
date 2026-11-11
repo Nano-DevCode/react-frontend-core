@@ -19,9 +19,9 @@ export const Sidebar = () => {
   const location = useLocation();
   const { data: flags = [] } = useFeatureFlagsQuery();
 
-  const userRoles = user?.roles || ['user'];
+  const userRoles = (user?.roles || ['user']).map((r) => r.toLowerCase());
   const hasAccess = (roles: string[]) =>
-    roles.some((r) => userRoles.includes(r)) ||
+    roles.some((r) => userRoles.includes(r.toLowerCase())) ||
     userRoles.includes('admin') ||
     userRoles.includes('superadmin');
 

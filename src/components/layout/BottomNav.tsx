@@ -1,24 +1,36 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
   HardDrive,
   Activity,
   ShieldCheck,
+  Headphones,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { cn } from '@/lib/utils';
 
 export const BottomNav = () => {
   const user = useAuthStore((state) => state.user);
-  const userRoles = user?.roles || [];
-  const isAdmin = userRoles.includes('admin') || userRoles.includes('superadmin');
+  const userRoles = (user?.roles || []).map((r) => r.toLowerCase());
+  const isAdmin =
+    userRoles.includes('admin') || userRoles.includes('superadmin');
 
   const navItems = [
     { title: 'Inicio', path: '/', icon: LayoutDashboard },
-    ...(isAdmin ? [{ title: 'Usuarios', path: '/usuarios', icon: Users }] : []),
-    { title: 'Archivos', path: '/archivos', icon: HardDrive },
-    { title: 'Auditoría', path: '/auditoria', icon: Activity },
+    ...(isAdmin
+      ? [
+          { title: 'Usuarios', path: '/usuarios', icon: Users },
+          { title: 'Archivos', path: '/archivos', icon: HardDrive },
+          { title: 'Auditoría', path: '/auditoria', icon: Activity },
+        ]
+      : [
+          {
+            title: 'Bot Discord',
+            path: '/admin/discord-bot',
+            icon: Headphones,
+          },
+        ]),
     { title: '2FA', path: '/seguridad-2fa', icon: ShieldCheck },
   ];
 
@@ -48,4 +60,3 @@ export const BottomNav = () => {
     </nav>
   );
 };
-

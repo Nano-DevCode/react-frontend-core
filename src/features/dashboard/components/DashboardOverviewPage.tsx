@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { useStepUpAuth } from '@/features/two-factor/hooks/use-step-up-auth';
@@ -10,6 +10,10 @@ import { DashboardStepUpCard } from './DashboardStepUpCard';
 export default function DashboardOverviewPage() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+
+  const userRoles = (user?.roles || []).map((r) => r.toLowerCase());
+  const isAdmin =
+    userRoles.includes('admin') || userRoles.includes('superadmin');
 
   const {
     isOpen: isStepUpOpen,
@@ -34,22 +38,27 @@ export default function DashboardOverviewPage() {
     <div className="notranslate space-y-8">
       {/* Banner de Bienvenida */}
       <DashboardWelcomeBanner
-        userName={user?.name || user?.email?.split('@')[0] || 'Administrador'}
+        userName={user?.name || user?.email?.split('@')[0] || 'Usuario'}
+        isAdmin={isAdmin}
         onNavigateFiles={() => navigate('/archivos')}
         onNavigate2FA={() => navigate('/seguridad-2fa')}
         onNavigateHealth={() => navigate('/salud')}
+        onNavigateDiscordBot={() => navigate('/admin/discord-bot')}
       />
 
       {/* Métricas Principales en Bento Grid */}
       <DashboardMetricsGrid
         primaryRole={user?.roles?.[0] || 'user'}
+        isAdmin={isAdmin}
         isTwoFactorEnabled={Boolean(user?.isTwoFactorEnabled)}
       />
 
-      {/* Probador Interactivo de Step-Up Auth para Acciones Críticas */}
-      <DashboardStepUpCard
-        onTriggerCriticalAction={handleTriggerCriticalAction}
-      />
+      {/* Probador Interactivo de Step-Up Auth (Solo Admin) */}
+      {isAdmin && (
+        <DashboardStepUpCard
+          onTriggerCriticalAction={handleTriggerCriticalAction}
+        />
+      )}
 
       {/* Modal de Step-Up para el disparador */}
       <StepUpModal

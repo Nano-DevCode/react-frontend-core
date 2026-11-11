@@ -1,11 +1,20 @@
-export const DISCORD_BOT_ENDPOINTS = {
+﻿export const DISCORD_BOT_ENDPOINTS = {
   STATUS: '/discord/status',
   GUILDS: '/discord/guilds',
+  OAUTH_URL: '/discord/oauth/url',
+  OAUTH_SYNC: '/discord/oauth/sync',
   QUEUE: (guildId: string) => `/discord/queue/${guildId}`,
   PLAYBACK: (guildId: string) => `/discord/playback/${guildId}`,
   REMOVE_TRACK: (guildId: string, index: number) => `/discord/queue/${guildId}/tracks/${index}`,
   CLEAR_QUEUE: (guildId: string) => `/discord/queue/${guildId}`,
   SEND_MESSAGE: '/discord/messages/send',
   UPDATE_CONFIG: (guildId: string) => `/discord/guilds/${guildId}/config`,
+  LAVALINK_REGISTER: '/discord/lavalink/register',
+  LAVALINK_ME: '/discord/lavalink/me',
+  LAVALINK_UNREGISTER: (guildId: string) => `/discord/lavalink/unregister/${guildId}`,
+  LAVALINK_RESOLVE: '/discord/lavalink/resolve',
+  TWITCH_OAUTH_URL: '/discord/twitch/oauth/url',
+  TWITCH_LINK: '/discord/twitch/link',
+  TWITCH_ME: '/discord/twitch/me',
+  TWITCH_UNLINK: (channel: string) => `/discord/twitch/unlink/${encodeURIComponent(channel)}`,
 } as const;
-

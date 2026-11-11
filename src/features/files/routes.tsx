@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { RoleGuard } from '@/router/guards';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -10,7 +10,7 @@ export const filesRoutes: RouteObject[] = [
   {
     path: 'archivos',
     element: (
-      <RoleGuard allowedRoles={['admin', 'user']}>
+      <RoleGuard allowedRoles={['admin']}>
         <Suspense fallback={<TableSkeleton rows={6} columns={5} />}>
           <S3FilesPage />
         </Suspense>
@@ -18,4 +18,3 @@ export const filesRoutes: RouteObject[] = [
     ),
   },
 ];
-

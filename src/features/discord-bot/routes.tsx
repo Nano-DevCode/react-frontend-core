@@ -11,7 +11,7 @@ export const discordBotRoutes: RouteObject[] = [
     path: 'admin/discord-bot',
     element: (
       <FeatureFlagGuard flagKey="DISCORD_BOT_ENABLED">
-        <RoleGuard allowedRoles={['admin']}>
+        <RoleGuard allowedRoles={['admin', 'user', 'auditor']}>
           <Suspense fallback={<BentoGridSkeleton />}>
             <DiscordBotPage />
           </Suspense>

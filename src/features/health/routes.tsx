@@ -1,5 +1,6 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { RoleGuard } from '@/router/guards';
 import { BentoGridSkeleton } from '@/components/shared/BentoGridSkeleton';
 import { lazyWithRetry } from '@/router/lazy-retry';
 
@@ -9,10 +10,11 @@ export const healthRoutes: RouteObject[] = [
   {
     path: 'salud',
     element: (
-      <Suspense fallback={<BentoGridSkeleton />}>
-        <HealthDashboardPage />
-      </Suspense>
+      <RoleGuard allowedRoles={['admin', 'auditor']}>
+        <Suspense fallback={<BentoGridSkeleton />}>
+          <HealthDashboardPage />
+        </Suspense>
+      </RoleGuard>
     ),
   },
 ];
-
