@@ -19,7 +19,7 @@ export const Footer = () => {
 
           <div className="flex items-center gap-1.5">
             <span>Hecho por mí —</span>
-            <span className="font-semibold text-foreground">Manuel Eduardo</span>
+            <span className="font-semibold text-foreground">Nano-DevCode</span>
             <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" />
           </div>
         </div>
@@ -33,7 +33,7 @@ export const Footer = () => {
 
           <span className="text-border">•</span>
 
-          <span>© {currentYear} Manuel Eduardo</span>
+          <span>© {currentYear} Nano-DevCode</span>
         </div>
       </div>
     </footer>
