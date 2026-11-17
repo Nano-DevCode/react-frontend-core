@@ -168,6 +168,7 @@ export interface LinkTwitchChannelDto {
 }
 
 export interface TwitchTtsPayload {
+  id?: string;
   channel: string;
   user: string;
   displayName: string;

@@ -44,6 +44,7 @@ export const useTwitchTts = () => {
 
   const queueRef = useRef<Array<{ displayName: string; text: string }>>([]);
   const isProcessingQueueRef = useRef<boolean>(false);
+  const seenEventKeysRef = useRef<Set<string>>(new Set());
 
   // Cargar voces del sintetizador nativo del navegador
   useEffect(() => {
@@ -189,6 +190,17 @@ export const useTwitchTts = () => {
       const customEvent = e as CustomEvent<TwitchTtsPayload>;
       const payload = customEvent.detail;
       if (!payload || !payload.text) return;
+
+      const dedupKey =
+        payload.id || `${payload.timestamp}:${payload.user}:${payload.text}`;
+      if (seenEventKeysRef.current.has(dedupKey)) {
+        return;
+      }
+      seenEventKeysRef.current.add(dedupKey);
+      if (seenEventKeysRef.current.size > 100) {
+        const oldest = seenEventKeysRef.current.values().next().value;
+        if (oldest) seenEventKeysRef.current.delete(oldest);
+      }
 
       setRecentMessages((prev) => [payload, ...prev.slice(0, 19)]);
 
