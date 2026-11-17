@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import {
   Bot,
   Radio,
@@ -37,6 +37,7 @@ import {
 import { PlayerControls } from './PlayerControls';
 import { QueueViewer } from './QueueViewer';
 import { GuildChatAndChannelCard } from './GuildChatAndChannelCard';
+import { TwitchTtsCard } from './TwitchTtsCard';
 
 export default function DiscordBotDashboard() {
   const user = useAuthStore((state) => state.user);
@@ -579,15 +580,15 @@ export default function DiscordBotDashboard() {
                       <div className="flex items-center gap-2">
                         <Tv className="h-4 w-4 text-purple-500" />
                         <h3 className="text-sm font-semibold text-foreground">
-                          Twitch Chat Bot (<code className="font-mono">!pl</code>, <code className="font-mono">!song</code>, <code className="font-mono">!skip</code>)
+                          Twitch Chat Bot (<code className="font-mono">!pl</code>, <code className="font-mono">!pr</code>, <code className="font-mono">!song</code>, <code className="font-mono">!skip</code>)
                         </h3>
                       </div>
                       <Badge variant="outline" className="text-[10px]">
-                        Cooldown 15s • Máx 10m
+                        Cooldown 10-15s • TTS Web
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Permite que tus viewers en Twitch pidan canciones en el chat con <code className="font-mono text-foreground">!pl [nombre o URL]</code> directo a este servidor.
+                      Permite que tus viewers pidan música con <code className="font-mono text-foreground">!pl [canción]</code> o envíen mensajes de voz con <code className="font-mono text-foreground">!pr [mensaje]</code> que se leerán en tu navegador.
                     </p>
                     <div className="flex gap-2">
                       <Input
@@ -630,6 +631,9 @@ export default function DiscordBotDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Lector de Voz de Twitch (!pr TTS en el Navegador) */}
+              <TwitchTtsCard />
 
               {/* Main 2-column Grid: Player on left/top, Queue on right/bottom */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

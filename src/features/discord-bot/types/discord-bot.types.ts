@@ -167,6 +167,14 @@ export interface LinkTwitchChannelDto {
   voiceChannelId?: string;
 }
 
+export interface TwitchTtsPayload {
+  channel: string;
+  user: string;
+  displayName: string;
+  text: string;
+  timestamp: string;
+}
+
 /**
  * DTO para enviar un mensaje de texto a un canal de Discord
  */

@@ -376,10 +376,20 @@ export const useDiscordSocketSync = (guildId: string | null) => {
       }
     };
 
+    // 5. Evento: Lector de voz TTS de Twitch (!pr) exclusivo para el navegador
+    const onTwitchTts = (data: unknown) => {
+      if (typeof window !== 'undefined' && data) {
+        window.dispatchEvent(
+          new CustomEvent('antigravity:twitch-tts', { detail: data }),
+        );
+      }
+    };
+
     socket.on('discord:queue-updated', onQueueUpdated);
     socket.on('discord:track-start', onTrackStart);
     socket.on('discord:playback-state', onPlaybackState);
     socket.on('discord:track-progress', onTrackProgress);
+    socket.on('discord:twitch-tts', onTwitchTts);
 
     return () => {
       if (guildId && socket.connected) {
@@ -391,6 +401,7 @@ export const useDiscordSocketSync = (guildId: string | null) => {
       socket.off('discord:track-start', onTrackStart);
       socket.off('discord:playback-state', onPlaybackState);
       socket.off('discord:track-progress', onTrackProgress);
+      socket.off('discord:twitch-tts', onTwitchTts);
     };
   }, [guildId, accessToken, queryClient]);
 
